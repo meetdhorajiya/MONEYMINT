@@ -14,6 +14,7 @@ function RootStack() {
 
   return (
     <Stack>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       {/* The main tab navigator is treated as a single screen in the stack */}
       <Stack.Screen name="(app)" options={{ headerShown: false }} />
 

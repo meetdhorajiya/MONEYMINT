@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../../hooks/useAuth';
 import { signIn } from '../../store/slices/authSlice';
 import apiClient from '../../api/client';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function SignUpScreen() {
   const [name, setName] = useState('');
@@ -26,9 +28,8 @@ export default function SignUpScreen() {
 
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/auth/signup', { name, email, password });
+      const response = await apiClient.post('/auth/signup', { name, email: email.toLowerCase() });
       dispatch(signIn(response.data));
-      // AuthProvider will redirect to the main app after successful sign-in
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.response?.data?.message || 'An unexpected error occurred.');
     } finally {
@@ -37,59 +38,58 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-        <KeyboardAvoidingView 
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className="flex-1 justify-center"
-        >
+    <LinearGradient colors={['#FFFFFF', '#E0EFFF']} className="flex-1">
+      <SafeAreaView className="flex-1">
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
             <View className="p-8">
-                <View className="items-center mb-10">
-                    <Text className="text-4xl font-bold text-gray-800">Create Account</Text>
-                    <Text className="text-lg text-gray-500">Get started with your new account</Text>
+              <View className="items-center mb-10">
+                <View className="bg-blue-100 p-4 rounded-full">
+                    <Ionicons name="person-add-outline" size={48} color="#007AFF" />
                 </View>
+                <Text className="text-4xl font-bold text-gray-800 mt-4">Create Account</Text>
+                <Text className="text-lg text-gray-500">Get started with your new account</Text>
+              </View>
 
-                <TextInput
-                    className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-                    placeholder="Full Name"
-                    value={name}
-                    onChangeText={setName}
-                    textContentType="name"
-                />
-                <TextInput
-                    className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    textContentType="emailAddress"
-                />
-                <TextInput
-                    className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200"
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    textContentType="newPassword"
-                />
-                <TouchableOpacity 
-                    className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center shadow"
-                    onPress={handleSignUp}
-                    disabled={isLoading}
-                >
+              {/* Full Name Input with Icon */}
+              <View className="flex-row items-center bg-white p-3 rounded-xl mb-4 border border-gray-200">
+                <Ionicons name="person-outline" size={24} color="gray" className="mr-3" />
+                <TextInput className="flex-1 text-lg" placeholder="Full Name" value={name} onChangeText={setName} />
+              </View>
+
+              {/* Email Input with Icon */}
+              <View className="flex-row items-center bg-white p-3 rounded-xl mb-4 border border-gray-200">
+                <Ionicons name="mail-outline" size={24} color="gray" className="mr-3" />
+                <TextInput className="flex-1 text-lg" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+              </View>
+
+              {/* Password Input with Icon */}
+              <View className="flex-row items-center bg-white p-3 rounded-xl mb-6 border border-gray-200">
+                <Ionicons name="lock-closed-outline" size={24} color="gray" className="mr-3" />
+                <TextInput className="flex-1 text-lg" placeholder="Password (min. 6 characters)" value={password} onChangeText={setPassword} secureTextEntry />
+              </View>
+
+              <TouchableOpacity 
+                className="bg-blue-600 p-4 rounded-xl flex-row justify-center items-center shadow-md shadow-blue-300"
+                onPress={handleSignUp}
+                disabled={isLoading}
+              >
                 {isLoading ? (
-                    <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color="#fff" />
                 ) : (
-                    <Text className="text-white text-center text-lg font-bold">Sign Up</Text>
+                  <Text className="text-white text-center text-lg font-bold">Sign Up</Text>
                 )}
-                </TouchableOpacity>
-                 <TouchableOpacity className="mt-6" onPress={() => router.back()}>
-                    <Text className="text-center text-blue-600 font-semibold">
-                        Already have an account? <Text className="font-bold underline">Sign In</Text>
-                    </Text>
-                </TouchableOpacity>
+              </TouchableOpacity>
+
+              <TouchableOpacity className="mt-8" onPress={() => router.back()}>
+                <Text className="text-center text-gray-600 font-semibold">
+                  Already have an account? <Text className="text-blue-600 font-bold">Sign In</Text>
+                </Text>
+              </TouchableOpacity>
             </View>
+          </ScrollView>
         </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
