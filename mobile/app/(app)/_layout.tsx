@@ -1,18 +1,9 @@
-import { Tabs, Link } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
 
 export default function AppLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: '#007AFF', // A nice blue for the active tab
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          backgroundColor: '#FFFFFF', // A clean white background for the tab bar
-        },
-      }}
-    >
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#007AFF' }}>
       <Tabs.Screen
         name="dashboard"
         options={{
@@ -24,9 +15,9 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="transactions"
+        name="friends" // <-- Renamed from "transactions"
         options={{
-          title: 'Transactions',
+          title: 'Friends', // <-- Updated title
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'list-circle' : 'list-circle-outline'} size={24} color={color} />

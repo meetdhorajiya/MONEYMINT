@@ -1,50 +1,43 @@
+// mobile/app/(app)/friends.tsx
+
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
 import { fetchTransactions } from '../../store/slices/transactionSlice';
-import { useIsFocused } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SummaryCards from '../../components/SummaryCards';
-import TransactionItem from '../../components/TransactionItem';
+import { useIsFocused } from '@react-navigation/native';
+import TransactionItem from '../../components/TransactionItem'; // <-- Import the new component
 
-export default function DashboardScreen() {
+export default function FriendsScreen() {
   const dispatch = useAppDispatch();
   const isFocused = useIsFocused();
   const { items: allTransactions, status } = useAppSelector((state) => state.transactions);
-  const user = useAppSelector((state) => state.auth.user);
 
   useEffect(() => {
     if (isFocused) {
       dispatch(fetchTransactions());
     }
   }, [dispatch, isFocused]);
-  
-  const personalTransactions = allTransactions.filter(t => t.ledger === 'personal');
-  
-  const totalIncome = personalTransactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = personalTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+
+  const friendTransactions = allTransactions.filter(t => t.ledger === 'friend');
+  const totalIncome = friendTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = friendTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
   const netBalance = totalIncome - totalExpense;
 
   const ListHeader = () => (
     <View>
       <View className="p-6">
-        <Text className="text-3xl font-bold text-gray-800">Hi, {user?.name}!</Text>
-        <Text className="text-lg text-gray-500">Your Personal Dashboard</Text>
+        <Text className="text-3xl font-bold text-gray-800">Friends</Text>
       </View>
-      <SummaryCards 
-        netBalance={netBalance} 
-        totalIncome={totalIncome} 
-        totalExpense={totalExpense} 
-      />
-      <View className="px-6 mt-8">
+      <View className="mb-4">
+        <SummaryCards netBalance={netBalance} totalIncome={totalIncome} totalExpense={totalExpense} />
+      </View>
+      <View className="px-6 mt-2 mb-4">
         <Link 
-          href={{ pathname: "/add-transaction", params: { ledgerType: 'personal' } }} 
+          href={{ pathname: "/add-transaction", params: { ledgerType: 'friend' } }} 
           asChild
         >
           <TouchableOpacity className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center shadow-lg">
@@ -53,9 +46,6 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </Link>
       </View>
-      <Text className="text-xl font-bold text-gray-700 mt-8 px-6 mb-2">
-        Recent Personal Transactions
-      </Text>
     </View>
   );
 
@@ -65,12 +55,12 @@ export default function DashboardScreen() {
         <ActivityIndicator size="large" className="flex-1"/>
       ) : (
         <FlatList
-          data={personalTransactions}
-          renderItem={({ item }) => <TransactionItem item={item} />}
+          data={friendTransactions}
+          renderItem={({ item }) => <TransactionItem item={item} />} // <-- Use the imported component
           keyExtractor={(item) => item._id}
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={() => (
-            <Text className="text-center text-gray-500 mt-10 px-6">No personal transactions yet. Tap the button above to add one!</Text>
+            <Text className="text-center text-gray-500 mt-10">No transactions found for friends.</Text>
           )}
           contentContainerStyle={{ flexGrow: 1 }}
         />

@@ -13,6 +13,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const navigationState = useRootNavigationState();
 
+  // This effect checks for a stored token on initial app load. (No changes here)
   useEffect(() => {
     const checkStoredToken = async () => {
       try {
@@ -34,14 +35,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkStoredToken();
   }, [dispatch]);
 
+  // This effect handles navigation redirects with the corrected logic.
   useEffect(() => {
     if (!navigationState?.key || isLoading) return;
 
-    const inAppGroup = segments[0] === '(app)';
+    const inAuthGroup = segments[0] === '(auth)';
 
-    if (isAuthenticated && !inAppGroup) {
-      router.replace('/(app)/dashboard');
-    } else if (!isAuthenticated && inAppGroup) {
+    // If the user is authenticated AND is in the auth group, redirect to the dashboard.
+    if (isAuthenticated && inAuthGroup) {
+      router.replace('/dashboard');
+    } 
+    // If the user is NOT authenticated AND is NOT in the auth group, redirect to login.
+    else if (!isAuthenticated && !inAuthGroup) {
       router.replace('/login');
     }
   }, [isAuthenticated, segments, isLoading, navigationState, router]);
@@ -54,6 +59,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Once the authentication state is determined, render the actual screen.
   return <>{children}</>;
 }
