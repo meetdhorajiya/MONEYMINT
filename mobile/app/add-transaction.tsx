@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, Alert, Platform,
-  KeyboardAvoidingView, ActivityIndicator, ScrollView,
+  View, Text, TextInput, Alert, Platform,
+  KeyboardAvoidingView, ActivityIndicator, ScrollView, Pressable, StyleSheet,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -42,7 +42,7 @@ export default function AddTransactionScreen() {
     try {
       await dispatch(addTransaction(newTransaction)).unwrap();
       router.back();
-    } catch (error: any) {
+    } catch (error: any)      {
       Alert.alert('Error', error.message || 'Failed to save transaction.');
     } finally {
       setIsLoading(false);
@@ -58,18 +58,22 @@ export default function AddTransactionScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <View className="p-6">
             <View className="flex-row mb-6 bg-gray-200 rounded-lg p-1">
-              <TouchableOpacity
-                className={`flex-1 p-3 rounded-md ${type === 'expense' ? 'bg-white shadow' : ''}`}
+              {/* We now use the 'style' prop for the dynamic part */}
+              <Pressable
+                className="flex-1 p-3 rounded-md"
+                style={type === 'expense' ? styles.selectedButton : styles.unselectedButton}
                 onPress={() => setType('expense')}
               >
                 <Text className={`text-center font-bold ${type === 'expense' ? 'text-red-500' : 'text-gray-500'}`}>Expense (OUT)</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`flex-1 p-3 rounded-md ${type === 'income' ? 'bg-white shadow' : ''}`}
+              </Pressable>
+              
+              <Pressable
+                className="flex-1 p-3 rounded-md"
+                style={type === 'income' ? styles.selectedButton : styles.unselectedButton}
                 onPress={() => setType('income')}
               >
                 <Text className={`text-center font-bold ${type === 'income' ? 'text-green-500' : 'text-gray-500'}`}>Income (IN)</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             <TextInput
@@ -96,7 +100,7 @@ export default function AddTransactionScreen() {
               multiline
             />
             
-            <TouchableOpacity
+            <Pressable
               className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center"
               onPress={handleSaveTransaction}
               disabled={isLoading}
@@ -106,10 +110,21 @@ export default function AddTransactionScreen() {
               ) : (
                 <Text className="text-white text-center text-lg font-bold">Save Transaction</Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+// Create a StyleSheet for the styles that change
+const styles = StyleSheet.create({
+  selectedButton: {
+    backgroundColor: 'white',
+    // You can add shadow styles here if needed for Android/iOS
+  },
+  unselectedButton: {
+    backgroundColor: 'transparent',
+  }
+});
