@@ -14,18 +14,23 @@ export interface Transaction {
 
 interface TransactionState {
   items: Transaction[];
+  selectedTransaction: Transaction | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
 const initialState: TransactionState = {
   items: [],
+  selectedTransaction: null,
   status: 'idle',
   error: null,
 };
 
+// --- ASYNC THUNKS ---
+
+// Fetches the list of all transactions
 export const fetchTransactions = createAsyncThunk(
-  'transactions/fetchTransactions',
+  'transactions/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiClient.get('/transactions');
@@ -36,11 +41,25 @@ export const fetchTransactions = createAsyncThunk(
   }
 );
 
+// Adds a single new transaction
 export const addTransaction = createAsyncThunk(
-  'transactions/addTransaction',
+  'transactions/add',
   async (newTransaction: Omit<Transaction, '_id' | 'date' | 'user'>, { rejectWithValue }) => {
     try {
       const response = await apiClient.post('/transactions', newTransaction);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Fetches one transaction by its ID for the details page
+export const fetchTransactionById = createAsyncThunk(
+  'transactions/fetchById',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get(`/transactions/${id}`);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response.data);
@@ -54,8 +73,9 @@ const transactionSlice = createSlice({
   reducers: {},
   extraReducers: (builder: ActionReducerMapBuilder<TransactionState>) => {
     builder
-      .addCase(fetchTransactions.pending, (state) => {
-        state.status = 'loading';
+      // Reducers for the list of transactions
+      .addCase(fetchTransactions.pending, (state) => { 
+        state.status = 'loading'; 
       })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -65,9 +85,20 @@ const transactionSlice = createSlice({
         state.status = 'failed';
         state.error = (action.payload as any)?.message || 'Failed to fetch transactions';
       })
+      
+      // Reducer for adding a transaction
       .addCase(addTransaction.fulfilled, (state, action) => {
-        // THIS IS THE FIX: Explicitly create a new array to guarantee a re-render.
         state.items = [action.payload, ...state.items];
+      })
+
+      // Reducers for fetching a single transaction for the details page
+      .addCase(fetchTransactionById.pending, (state) => {
+        state.status = 'loading';
+        state.selectedTransaction = null;
+      })
+      .addCase(fetchTransactionById.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.selectedTransaction = action.payload;
       });
   },
 });

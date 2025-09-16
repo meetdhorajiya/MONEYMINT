@@ -34,6 +34,13 @@ export default function AppLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="transaction-details"
+        options={{
+          href: null,       // Hides the tab from the bar
+          headerShown: true,  // Allows this screen to show its own header
+        }}
+      />
     </Tabs>
   );
 }
