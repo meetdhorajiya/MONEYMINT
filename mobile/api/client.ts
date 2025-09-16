@@ -1,24 +1,27 @@
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
-// For Android Emulator, use 10.0.2.2. 
-// Use YOUR computer's IP address here!
-const API_BASE_URL = 'http://172.31.133.222:3000/api'; // <-- Add /api here
+// Load environment variables
+const developmentUrl = process.env.EXPO_PUBLIC_API_URL_DEV;
+const productionUrl = process.env.EXPO_PUBLIC_API_URL_PROD;
+
+// Choose correct base URL
+const API_BASE_URL = __DEV__ ? developmentUrl : productionUrl;
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
+// Attach token if available
 apiClient.interceptors.request.use(
   async (config) => {
-    const token = await SecureStore.getItemAsync('token');
+    const token = await SecureStore.getItemAsync("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default apiClient;
