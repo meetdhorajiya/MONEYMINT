@@ -67,6 +67,19 @@ export const fetchTransactionById = createAsyncThunk(
   }
 );
 
+// Deletes one transaction by its ID
+export const deleteTransaction = createAsyncThunk(
+  'transactions/delete',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await apiClient.delete(`/transactions/${id}`);
+      return id; // Return the ID on success
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const transactionSlice = createSlice({
   name: 'transactions',
   initialState,
@@ -99,6 +112,12 @@ const transactionSlice = createSlice({
       .addCase(fetchTransactionById.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.selectedTransaction = action.payload;
+      })
+
+      // Reducer for deleting a transaction
+      .addCase(deleteTransaction.fulfilled, (state, action) => {
+        state.items = state.items.filter(t => t._id !== action.payload);
+        state.selectedTransaction = null;
       });
   },
 });
