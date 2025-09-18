@@ -28,7 +28,7 @@ export default function SignUpScreen() {
 
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/auth/signup', { name, email: email.toLowerCase() });
+      const response = await apiClient.post('/auth/signup', { name, email: email.toLowerCase(),password});
       dispatch(signIn(response.data));
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.response?.data?.message || 'An unexpected error occurred.');
