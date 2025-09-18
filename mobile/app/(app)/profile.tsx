@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
 import { signOut } from '../../store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 
 // A reusable component for each menu item
 const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
@@ -14,7 +15,7 @@ const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
 }) => (
   <TouchableOpacity 
     onPress={onPress} 
-    disabled={isComingSoon}
+    disabled={isComingSoon || !onPress}
     className="flex-row items-center p-4 bg-white border-b border-gray-100"
     activeOpacity={0.6}
   >
@@ -51,7 +52,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView>
-        {/* Updated User Info Header */}
+        {/* User Info Header */}
         <View className="p-6">
             <Text className="text-3xl font-bold text-gray-800 mb-4">Profile</Text>
             <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -75,6 +76,11 @@ export default function ProfileScreen() {
         {/* Menu Options */}
         <View className="px-6">
             <View className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                <Link href="/change-email" asChild>
+                  <TouchableOpacity>
+                    <ProfileMenuItem icon="at-outline" text="Change Email" />
+                  </TouchableOpacity>
+                </Link>
                 <ProfileMenuItem icon="call-outline" text="Contact Us" onPress={handleContactUs} />
                 <ProfileMenuItem icon="shield-checkmark-outline" text="Privacy Policy" onPress={handlePrivacyPolicy} />
                 <ProfileMenuItem icon="color-palette-outline" text="Themes" isComingSoon={true} />
@@ -89,7 +95,7 @@ export default function ProfileScreen() {
             onPress={handleSignOut}
           >
             <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-            <Text className="text-red-600 text-lg font-bold ml-2">LogOut</Text>
+            <Text className="text-red-600 text-lg font-bold ml-2">Log Out</Text>
           </TouchableOpacity>
         </View>
 

@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 import * as SecureStore from 'expo-secure-store';
+import apiClient from '../../api/client';
 
 interface User {
   id: string;
@@ -17,9 +18,22 @@ interface AuthState {
 const initialState: AuthState = {
   token: null,
   isAuthenticated: false,
-  isLoading: true, // Start with loading true to check for stored token
+  isLoading: true,
   user: null,
 };
+
+// Async thunk for changing the user's email
+export const changeEmail = createAsyncThunk(
+  'auth/changeEmail',
+  async (data: { newEmail: string, currentPassword: string }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/user/change-email', data);
+      return response.data.user; // Return the updated user object
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
@@ -51,6 +65,16 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.isLoading = false;
     }
+  },
+  extraReducers: (builder: ActionReducerMapBuilder<AuthState>) => {
+    // This reducer handles the state update after a successful email change
+    builder.addCase(changeEmail.fulfilled, (state, action) => {
+      if (state.user) {
+        state.user.email = action.payload.email;
+        // Update the stored user data as well to persist the change
+        SecureStore.setItemAsync('user', JSON.stringify(state.user));
+      }
+    });
   },
 });
 

@@ -41,6 +41,13 @@ export default function AppLayout() {
           headerShown: true,  // Allows this screen to show its own header
         }}
       />
+      <Tabs.Screen
+        name="change-email"
+        options={{
+          href: null, // Hides it from the tab bar
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }
