@@ -49,18 +49,25 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="manage-profile"
-        options={{
-          href: null, // Hides it from the tab bar
-          headerShown: true,
-        }}
-      />
-      <Tabs.Screen
         name="change-password"
         options={{
           href: null, // Hides it from the tab bar
           headerShown: true,
         }}
+      />
+      <Tabs.Screen 
+        name="settings" 
+        options={{ 
+          href: null, 
+          headerShown: true
+        }}
+      />
+      <Tabs.Screen 
+        name="delete-account" 
+        options={{ 
+          href: null, 
+          headerShown: true
+        }} 
       />
     </Tabs>
   );

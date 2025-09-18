@@ -48,6 +48,19 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+export const deleteAccount = createAsyncThunk(
+  'auth/deleteAccount',
+  async (password: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/user/delete-account', { currentPassword: password });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -80,15 +93,23 @@ const authSlice = createSlice({
     }
   },
   extraReducers: (builder: ActionReducerMapBuilder<AuthState>) => {
-    // This reducer handles the state update after a successful email change
-    builder.addCase(changeEmail.fulfilled, (state, action) => {
-      if (state.user) {
-        state.user.email = action.payload.email;
-        // Update the stored user data as well to persist the change
-        SecureStore.setItemAsync('user', JSON.stringify(state.user));
-      }
-    });
-    // Note: changePassword.fulfilled does not need a reducer as it doesn't change the client-side state.
+    builder
+      .addCase(changeEmail.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.email = action.payload.email;
+          // Update the stored user data as well to persist the change
+          SecureStore.setItemAsync('user', JSON.stringify(state.user));
+        }
+      })
+      .addCase(deleteAccount.fulfilled, (state) => {
+        // When account is deleted, log the user out
+        state.token = null;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isLoading = false;
+        SecureStore.deleteItemAsync('token');
+        SecureStore.deleteItemAsync('user');
+      });
   },
 });
 

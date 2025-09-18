@@ -6,6 +6,7 @@ import { signOut } from '../../store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 
+// This reusable component is exported so `settings.tsx` can use it too.
 export const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
   icon: keyof typeof Ionicons.glyphMap;
   text: string;
@@ -15,7 +16,7 @@ export const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
   <TouchableOpacity 
     onPress={onPress} 
     disabled={isComingSoon || !onPress}
-    className="flex-row items-center p-4 bg-white border-b border-gray-100"
+    className="flex-row items-center p-4 bg-white border-b border-gray-100 first:border-transparent"
     activeOpacity={0.6}
   >
     <Ionicons name={icon} size={24} color="#4B5563" />
@@ -43,36 +44,34 @@ export default function ProfileScreen() {
         <View className="p-6">
             <Text className="text-3xl font-bold text-gray-800 mb-4">Profile</Text>
             <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <View className="flex-row items-center">
-                  <Ionicons name="person-circle" size={64} color="#007AFF" />
-                  <View className="ml-4 flex-1">
-                      <Text className="text-sm text-gray-500">Name</Text>
-                      <Text className="text-2xl font-bold text-gray-800">{user?.name}</Text>
-                  </View>
-              </View>
-              <View className="border-t border-gray-100 mt-4 pt-4">
-                  <Text className="text-sm text-gray-500">Email</Text>
-                  <View className="flex-row items-center mt-1">
-                      <Ionicons name="mail-outline" size={20} color="#6B7280" />
-                      <Text className="text-base text-gray-600 ml-2">{user?.email}</Text>
-                  </View>
-              </View>
+                <View className="flex-row items-center">
+                    <Ionicons name="person-circle" size={64} color="#007AFF" />
+                    <View className="ml-4 flex-1">
+                        <Text className="text-sm text-gray-500">Name</Text>
+                        <Text className="text-2xl font-bold text-gray-800">{user?.name}</Text>
+                    </View>
+                </View>
+                <View className="border-t border-gray-100 mt-4 pt-4">
+                    <Text className="text-sm text-gray-500">Email</Text>
+                    <View className="flex-row items-center mt-1">
+                        <Ionicons name="mail-outline" size={20} color="#6B7280" />
+                        <Text className="text-base text-gray-600 ml-2">{user?.email}</Text>
+                    </View>
+                </View>
             </View>
         </View>
 
         {/* Menu Options */}
         <View className="px-6">
             <View className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <Link href="/manage-profile" asChild>
+                <Link href="/settings" asChild>
                   <TouchableOpacity>
-                    {/* Use a valid icon name here */}
-                    <ProfileMenuItem icon="cog-outline" text="Manage Profile" />
+                    <ProfileMenuItem icon="settings-outline" text="Settings" />
                   </TouchableOpacity>
                 </Link>
                 <ProfileMenuItem icon="call-outline" text="Contact Us" onPress={handleContactUs} />
                 <ProfileMenuItem icon="shield-checkmark-outline" text="Privacy Policy" onPress={handlePrivacyPolicy} />
                 <ProfileMenuItem icon="color-palette-outline" text="Themes" isComingSoon={true} />
-                <ProfileMenuItem icon="settings-outline" text="Settings" isComingSoon={true} />
             </View>
         </View>
         
