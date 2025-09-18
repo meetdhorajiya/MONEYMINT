@@ -3,8 +3,7 @@ import React from 'react';
 import { View, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, Link } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { ProfileMenuItem } from './profile'; // We can reuse the component from the profile screen
+import { ProfileMenuItem } from './profile';
 
 export default function ManageProfileScreen() {
   return (
@@ -17,7 +16,12 @@ export default function ManageProfileScreen() {
               <ProfileMenuItem icon="at-outline" text="Change Email" />
             </TouchableOpacity>
           </Link>
-          {/* You can add more options like "Change Password" here in the future */}
+          {/* ADD THIS NEW LINK */}
+          <Link href="/change-password" asChild>
+            <TouchableOpacity>
+              <ProfileMenuItem icon="lock-closed-outline" text="Change Password" />
+            </TouchableOpacity>
+          </Link>
         </View>
       </ScrollView>
     </SafeAreaView>

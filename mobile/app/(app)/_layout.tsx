@@ -55,6 +55,13 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+      <Tabs.Screen
+        name="change-password"
+        options={{
+          href: null, // Hides it from the tab bar
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

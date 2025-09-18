@@ -22,13 +22,26 @@ const initialState: AuthState = {
   user: null,
 };
 
-// Async thunk for changing the user's email
+// --- ASYNC THUNKS ---
+
 export const changeEmail = createAsyncThunk(
   'auth/changeEmail',
   async (data: { newEmail: string, currentPassword: string }, { rejectWithValue }) => {
     try {
       const response = await apiClient.post('/user/change-email', data);
       return response.data.user; // Return the updated user object
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (data: { currentPassword: string, newPassword: string }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/user/change-password', data);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response.data);
     }
@@ -75,6 +88,7 @@ const authSlice = createSlice({
         SecureStore.setItemAsync('user', JSON.stringify(state.user));
       }
     });
+    // Note: changePassword.fulfilled does not need a reducer as it doesn't change the client-side state.
   },
 });
 
