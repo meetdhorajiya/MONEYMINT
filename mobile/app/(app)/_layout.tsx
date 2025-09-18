@@ -48,6 +48,13 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+      <Tabs.Screen
+        name="manage-profile"
+        options={{
+          href: null, // Hides it from the tab bar
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

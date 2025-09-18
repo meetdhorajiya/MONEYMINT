@@ -6,8 +6,7 @@ import { signOut } from '../../store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 
-// A reusable component for each menu item
-const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
+export const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
   icon: keyof typeof Ionicons.glyphMap;
   text: string;
   isComingSoon?: boolean;
@@ -33,21 +32,9 @@ export default function ProfileScreen() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
 
-  const handleSignOut = () => {
-    dispatch(signOut());
-  };
-  
-  const handlePrivacyPolicy = () => {
-      Alert.alert("Privacy Policy", "Your data is stored securely and is not shared with any third parties.");
-  };
-  
-  const handleContactUs = () => {
-      Alert.alert(
-        "Contact Us", 
-        "For support, please email us at:\nsupport@moneymindapp.com",
-        [{ text: "OK" }]
-      );
-  };
+  const handleSignOut = () => dispatch(signOut());
+  const handlePrivacyPolicy = () => Alert.alert("Privacy Policy", "Your data is stored securely and is not shared with any third parties.");
+  const handleContactUs = () => Alert.alert("Contact Us", "For support, please email us at:\nsupport@moneymindapp.com");
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
@@ -56,29 +43,30 @@ export default function ProfileScreen() {
         <View className="p-6">
             <Text className="text-3xl font-bold text-gray-800 mb-4">Profile</Text>
             <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <View className="flex-row items-center">
-                    <Ionicons name="person-circle" size={64} color="#007AFF" />
-                    <View className="ml-4 flex-1">
-                        <Text className="text-sm text-gray-500">Name</Text>
-                        <Text className="text-2xl font-bold text-gray-800">{user?.name}</Text>
-                    </View>
-                </View>
-                <View className="border-t border-gray-100 mt-4 pt-4">
-                    <Text className="text-sm text-gray-500">Email</Text>
-                    <View className="flex-row items-center mt-1">
-                        <Ionicons name="mail-outline" size={20} color="#6B7280" />
-                        <Text className="text-base text-gray-600 ml-2">{user?.email}</Text>
-                    </View>
-                </View>
+              <View className="flex-row items-center">
+                  <Ionicons name="person-circle" size={64} color="#007AFF" />
+                  <View className="ml-4 flex-1">
+                      <Text className="text-sm text-gray-500">Name</Text>
+                      <Text className="text-2xl font-bold text-gray-800">{user?.name}</Text>
+                  </View>
+              </View>
+              <View className="border-t border-gray-100 mt-4 pt-4">
+                  <Text className="text-sm text-gray-500">Email</Text>
+                  <View className="flex-row items-center mt-1">
+                      <Ionicons name="mail-outline" size={20} color="#6B7280" />
+                      <Text className="text-base text-gray-600 ml-2">{user?.email}</Text>
+                  </View>
+              </View>
             </View>
         </View>
 
         {/* Menu Options */}
         <View className="px-6">
             <View className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <Link href="/change-email" asChild>
+                <Link href="/manage-profile" asChild>
                   <TouchableOpacity>
-                    <ProfileMenuItem icon="at-outline" text="Change Email" />
+                    {/* Use a valid icon name here */}
+                    <ProfileMenuItem icon="cog-outline" text="Manage Profile" />
                   </TouchableOpacity>
                 </Link>
                 <ProfileMenuItem icon="call-outline" text="Contact Us" onPress={handleContactUs} />
