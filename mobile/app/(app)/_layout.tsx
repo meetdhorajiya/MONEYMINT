@@ -58,16 +58,23 @@ export default function AppLayout() {
       <Tabs.Screen 
         name="settings" 
         options={{ 
-          href: null, 
+          href: null, // Hides it from the tab bar
           headerShown: true
         }}
       />
       <Tabs.Screen 
         name="delete-account" 
         options={{ 
-          href: null, 
+          href: null, // Hides it from the tab bar
           headerShown: true
         }} 
+      />
+      <Tabs.Screen
+        name="change-name"
+        options={{
+          href: null, // Hides it from the tab bar
+          headerShown: true,
+        }}
       />
     </Tabs>
   );

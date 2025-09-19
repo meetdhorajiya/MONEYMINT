@@ -24,12 +24,24 @@ const initialState: AuthState = {
 
 // --- ASYNC THUNKS ---
 
+export const changeName = createAsyncThunk(
+  'auth/changeName',
+  async (data: { newName: string, currentPassword: string }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/user/change-name', data);
+      return response.data.user;
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const changeEmail = createAsyncThunk(
   'auth/changeEmail',
   async (data: { newEmail: string, currentPassword: string }, { rejectWithValue }) => {
     try {
       const response = await apiClient.post('/user/change-email', data);
-      return response.data.user; // Return the updated user object
+      return response.data.user;
     } catch (error: any) {
       return rejectWithValue(error.response.data);
     }
@@ -94,15 +106,19 @@ const authSlice = createSlice({
   },
   extraReducers: (builder: ActionReducerMapBuilder<AuthState>) => {
     builder
+      .addCase(changeName.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.name = action.payload.name;
+          SecureStore.setItemAsync('user', JSON.stringify(state.user));
+        }
+      })
       .addCase(changeEmail.fulfilled, (state, action) => {
         if (state.user) {
           state.user.email = action.payload.email;
-          // Update the stored user data as well to persist the change
           SecureStore.setItemAsync('user', JSON.stringify(state.user));
         }
       })
       .addCase(deleteAccount.fulfilled, (state) => {
-        // When account is deleted, log the user out
         state.token = null;
         state.user = null;
         state.isAuthenticated = false;
