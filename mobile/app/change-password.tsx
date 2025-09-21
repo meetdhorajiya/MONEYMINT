@@ -58,23 +58,29 @@ export default function ChangePasswordScreen() {
         <TextInput
           className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
           placeholder="Current Password"
+          placeholderTextColor="#9CA3AF"
           value={currentPassword}
           onChangeText={setCurrentPassword}
           secureTextEntry
+          style={{ color: '#1F2937' }}
         />
         <TextInput
           className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
           placeholder="New Password"
+          placeholderTextColor="#9CA3AF"
           value={newPassword}
           onChangeText={setNewPassword}
           secureTextEntry
+          style={{ color: '#1F2937' }}
         />
         <TextInput
           className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200"
           placeholder="Confirm New Password"
+          placeholderTextColor="#9CA3AF"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
+          style={{ color: '#1F2937' }}
         />
         <TouchableOpacity 
           className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center"

@@ -54,19 +54,19 @@ export default function SignUpScreen() {
               {/* Full Name Input with Icon */}
               <View className="flex-row items-center bg-white p-3 rounded-xl mb-4 border border-gray-200">
                 <Ionicons name="person-outline" size={24} color="gray" className="mr-3" />
-                <TextInput className="flex-1 text-lg" placeholder="Full Name" value={name} onChangeText={setName} />
+                <TextInput className="flex-1 text-lg" placeholder="Full Name" placeholderTextColor="#9CA3AF" value={name} onChangeText={setName} />
               </View>
 
               {/* Email Input with Icon */}
               <View className="flex-row items-center bg-white p-3 rounded-xl mb-4 border border-gray-200">
                 <Ionicons name="mail-outline" size={24} color="gray" className="mr-3" />
-                <TextInput className="flex-1 text-lg" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                <TextInput className="flex-1 text-lg" placeholder="Email" placeholderTextColor="#9CA3AF" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
               </View>
 
               {/* Password Input with Icon */}
               <View className="flex-row items-center bg-white p-3 rounded-xl mb-6 border border-gray-200">
                 <Ionicons name="lock-closed-outline" size={24} color="gray" className="mr-3" />
-                <TextInput className="flex-1 text-lg" placeholder="Password (min. 6 characters)" value={password} onChangeText={setPassword} secureTextEntry />
+                <TextInput className="flex-1 text-lg" placeholder="Password (min. 6 characters)" placeholderTextColor="#9CA3AF" style={{ color: '#1F2937' }} value={password} onChangeText={setPassword} secureTextEntry />
               </View>
 
               <TouchableOpacity 
