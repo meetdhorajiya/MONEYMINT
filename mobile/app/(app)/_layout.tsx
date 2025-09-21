@@ -20,11 +20,10 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="customers" // 1. Renamed from "friends"
+        name="customers"
         options={{
-          title: 'Customers', // 2. Updated title
+          title: 'Customers',
           tabBarIcon: ({ color, focused }) => (
-            // 3. (Optional) Changed icon to be more suitable for customers
             <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
           ),
         }}
@@ -38,14 +37,6 @@ export default function AppLayout() {
           ),
         }}
       />
-      
-      {/* These hidden screens remain the same */}
-      <Tabs.Screen name="transaction-details" options={{ href: null, headerShown: true }} />
-      <Tabs.Screen name="settings" options={{ href: null, headerShown: true }} />
-      <Tabs.Screen name="delete-account" options={{ href: null, headerShown: true }} />
-      <Tabs.Screen name="change-name" options={{ href: null, headerShown: true }} />
-      <Tabs.Screen name="change-email" options={{ href: null, headerShown: true }} />
-      <Tabs.Screen name="change-password" options={{ href: null, headerShown: true }} />
     </Tabs>
   );
 }

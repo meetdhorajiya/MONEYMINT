@@ -3,7 +3,7 @@ import React from 'react';
 import { View, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, Link } from 'expo-router';
-import { ProfileMenuItem } from './profile';
+import { ProfileMenuItem } from '@/app/(app)/profile';
 
 export default function SettingsScreen() {
   return (

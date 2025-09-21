@@ -3,8 +3,8 @@ import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
-import { fetchTransactionById, deleteTransaction } from '../../store/slices/transactionSlice';
+import { useAppDispatch, useAppSelector } from '@/hooks/useAuth';
+import { fetchTransactionById, deleteTransaction } from '@/store/slices/transactionSlice';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TransactionDetailsScreen() {

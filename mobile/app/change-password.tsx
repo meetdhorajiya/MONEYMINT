@@ -2,8 +2,8 @@ import React, { useState, useCallback } from 'react'; // 1. Import useCallback
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, useFocusEffect } from 'expo-router'; // 2. Import useFocusEffect
-import { useAppDispatch } from '../../hooks/useAuth';
-import { changePassword } from '../../store/slices/authSlice';
+import { useAppDispatch } from '@/hooks/useAuth';
+import { changePassword } from '@/store/slices/authSlice';
 
 export default function ChangePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');

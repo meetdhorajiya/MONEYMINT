@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { useAppDispatch } from '../../hooks/useAuth';
-import { deleteAccount } from '../../store/slices/authSlice';
+import { useAppDispatch } from '@/hooks/useAuth';
+import { deleteAccount } from '@/store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function DeleteAccountScreen() {
