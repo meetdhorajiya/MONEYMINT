@@ -56,9 +56,11 @@ export default function DeleteAccountScreen() {
         <TextInput
           className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200"
           placeholder="Enter your password"
+          placeholderTextColor="#9CA3AF"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          style={{ color: '#1F2937' }}
         />
         <TouchableOpacity 
           className="bg-red-600 p-4 rounded-lg flex-row justify-center items-center"

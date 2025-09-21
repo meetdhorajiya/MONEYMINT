@@ -79,6 +79,7 @@ export default function AddTransactionScreen() {
             <TextInput
               className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
               placeholder="Amount (₹)"
+              placeholderTextColor="#9CA3AF"
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"
@@ -87,6 +88,7 @@ export default function AddTransactionScreen() {
             <TextInput
               className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
               placeholder="Category (e.g., Food, Jack, Salary)"
+              placeholderTextColor="#9CA3AF"
               value={category}
               onChangeText={setCategory}
               autoCapitalize="words"
@@ -95,6 +97,7 @@ export default function AddTransactionScreen() {
             <TextInput
               className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200 h-24"
               placeholder="Remark / Description (Optional)"
+              placeholderTextColor="#9CA3AF"
               value={description}
               onChangeText={setDescription}
               multiline
