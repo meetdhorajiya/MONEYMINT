@@ -2,8 +2,8 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 // Load environment variables
-const developmentUrl = process.env.EXPO_PUBLIC_API_URL_DEV;
-const productionUrl = process.env.EXPO_PUBLIC_API_URL_PROD;
+const developmentUrl = "http://172.31.133.222:3000/api";
+const productionUrl = "https://moneymint-seven.vercel.app/api";
 
 // Choose correct base URL
 const API_BASE_URL = __DEV__ ? developmentUrl : productionUrl;
