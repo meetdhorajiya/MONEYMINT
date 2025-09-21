@@ -1,26 +1,31 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
 
 export default function AppLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#007AFF' }}>
+    <Tabs 
+      screenOptions={{ 
+        tabBarActiveTintColor: '#007AFF',
+        headerShown: false,
+      }}
+    >
       <Tabs.Screen
         name="dashboard"
         options={{
           title: 'Dashboard',
-          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="friends" // <-- Renamed from "transactions"
+        name="customers" // 1. Renamed from "friends"
         options={{
-          title: 'Friends', // <-- Updated title
-          headerShown: false,
+          title: 'Customers', // 2. Updated title
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'list-circle' : 'list-circle-outline'} size={24} color={color} />
+            // 3. (Optional) Changed icon to be more suitable for customers
+            <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
           ),
         }}
       />
@@ -28,54 +33,19 @@ export default function AppLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} size={24} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
-        name="transaction-details"
-        options={{
-          href: null,       // Hides the tab from the bar
-          headerShown: true,  // Allows this screen to show its own header
-        }}
-      />
-      <Tabs.Screen
-        name="change-email"
-        options={{
-          href: null, // Hides it from the tab bar
-          headerShown: true,
-        }}
-      />
-      <Tabs.Screen
-        name="change-password"
-        options={{
-          href: null, // Hides it from the tab bar
-          headerShown: true,
-        }}
-      />
-      <Tabs.Screen 
-        name="settings" 
-        options={{ 
-          href: null, // Hides it from the tab bar
-          headerShown: true
-        }}
-      />
-      <Tabs.Screen 
-        name="delete-account" 
-        options={{ 
-          href: null, // Hides it from the tab bar
-          headerShown: true
-        }} 
-      />
-      <Tabs.Screen
-        name="change-name"
-        options={{
-          href: null, // Hides it from the tab bar
-          headerShown: true,
-        }}
-      />
+      
+      {/* These hidden screens remain the same */}
+      <Tabs.Screen name="transaction-details" options={{ href: null, headerShown: true }} />
+      <Tabs.Screen name="settings" options={{ href: null, headerShown: true }} />
+      <Tabs.Screen name="delete-account" options={{ href: null, headerShown: true }} />
+      <Tabs.Screen name="change-name" options={{ href: null, headerShown: true }} />
+      <Tabs.Screen name="change-email" options={{ href: null, headerShown: true }} />
+      <Tabs.Screen name="change-password" options={{ href: null, headerShown: true }} />
     </Tabs>
   );
 }
