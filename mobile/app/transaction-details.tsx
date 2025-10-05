@@ -1,41 +1,68 @@
-// mobile/app/(app)/transaction-details.tsx
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter, Link } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAuth';
-import { fetchTransactionById, deleteTransaction } from '@/store/slices/transactionSlice';
+import { fetchTransactionById, deleteTransaction, resetSelection } from '@/store/slices/transactionSlice';
 import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function TransactionDetailsScreen() {
   const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const isFocused = useIsFocused();
   const { selectedTransaction, status } = useAppSelector((state) => state.transactions);
 
   useEffect(() => {
-    if (transactionId) {
+    if (isFocused && transactionId) {
       dispatch(fetchTransactionById(transactionId));
     }
-  }, [transactionId, dispatch]);
+
+    return () => {
+      if (!isFocused) {
+        dispatch(resetSelection());
+      }
+    };
+  }, [transactionId, dispatch, isFocused]);
 
   const handleDelete = () => {
-    Alert.alert("Delete Transaction", "Are you sure? This action cannot be undone.", [
-      { text: "Cancel", style: "cancel" },
-      { 
-        text: "Delete", 
-        style: "destructive", 
-        onPress: () => {
-          if (transactionId) {
-            dispatch(deleteTransaction(transactionId)).unwrap().then(() => router.back());
-          }
-        } 
-      }
-    ]);
+    Alert.alert(
+      "Delete Transaction",
+      "Are you sure you want to delete this transaction? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => {
+            if (transactionId) {
+              dispatch(deleteTransaction(transactionId)).unwrap().then(() => {
+                router.back();
+              });
+            }
+          } 
+        }
+      ]
+    );
   };
 
-  if (status === 'loading' || !selectedTransaction) {
-    return <ActivityIndicator size="large" className="flex-1" />;
+  // The custom animation is replaced with the standard ActivityIndicator
+  if (status === 'loading') {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-gray-100">
+        <ActivityIndicator size="large" color="#007AFF" />
+      </SafeAreaView>
+    );
+  }
+
+  // Handle case where fetch is done but no transaction was found
+  if (!selectedTransaction) {
+    return (
+        <SafeAreaView className="flex-1 justify-center items-center bg-gray-100">
+            <Text>Transaction not found.</Text>
+        </SafeAreaView>
+    );
   }
 
   const isExpense = selectedTransaction.type === 'expense';
@@ -52,9 +79,22 @@ export default function TransactionDetailsScreen() {
         options={{
           title: 'Transaction Details',
           headerRight: () => (
-            <TouchableOpacity onPress={handleDelete} className="mr-2">
-              <Ionicons name="trash-outline" size={24} color="#EF4444" />
-            </TouchableOpacity>
+            <View className="flex-row gap-5 mr-2">
+              <TouchableOpacity onPress={handleDelete}>
+                <Ionicons name="trash-outline" size={24} color="#EF4444" />
+              </TouchableOpacity>
+              <Link 
+                href={{ 
+                  pathname: '/edit-transaction', 
+                  params: { ...selectedTransaction } 
+                }} 
+                asChild
+              >
+                <TouchableOpacity>
+                  <Ionicons name="pencil-outline" size={24} color="#007AFF" />
+                </TouchableOpacity>
+              </Link>
+            </View>
           ),
         }}
       />
@@ -65,13 +105,19 @@ export default function TransactionDetailsScreen() {
             <Text className={`text-4xl font-bold ${isExpense ? 'text-red-500' : 'text-green-500'}`}>
               {isExpense ? '-' : '+'}₹{selectedTransaction.amount.toFixed(2)}
             </Text>
+            
             <DetailRow label="Category" value={selectedTransaction.category} />
             <DetailRow label="Ledger" value={selectedTransaction.ledger} />
             <DetailRow 
               label="Date & Time" 
-              value={new Date(selectedTransaction.date).toLocaleString('en-IN')} 
+              value={new Date(selectedTransaction.date).toLocaleString('en-IN', {
+                dateStyle: 'long',
+                timeStyle: 'short',
+              })} 
             />
-            {selectedTransaction.description && <DetailRow label="Description" value={selectedTransaction.description} />}
+            {selectedTransaction.description && (
+              <DetailRow label="Description" value={selectedTransaction.description} />
+            )}
           </View>
         </View>
       </ScrollView>

@@ -26,9 +26,7 @@ const initialState: TransactionState = {
   error: null,
 };
 
-// --- ASYNC THUNKS ---
-
-// Fetches the list of all transactions
+// --- ASYNC THUNKS (no changes here) ---
 export const fetchTransactions = createAsyncThunk(
   'transactions/fetchAll',
   async (_, { rejectWithValue }) => {
@@ -40,8 +38,6 @@ export const fetchTransactions = createAsyncThunk(
     }
   }
 );
-
-// Adds a single new transaction
 export const addTransaction = createAsyncThunk(
   'transactions/add',
   async (newTransaction: Omit<Transaction, '_id' | 'date' | 'user'>, { rejectWithValue }) => {
@@ -53,8 +49,6 @@ export const addTransaction = createAsyncThunk(
     }
   }
 );
-
-// Fetches one transaction by its ID for the details page
 export const fetchTransactionById = createAsyncThunk(
   'transactions/fetchById',
   async (id: string, { rejectWithValue }) => {
@@ -66,8 +60,18 @@ export const fetchTransactionById = createAsyncThunk(
     }
   }
 );
-
-// Deletes one transaction by its ID
+export const updateTransaction = createAsyncThunk(
+    'transactions/update',
+    async (transaction: Omit<Transaction, 'user'>, { rejectWithValue }) => {
+        try {
+            const { _id, ...data } = transaction;
+            const response = await apiClient.put(`/transactions/${_id}`, data);
+            return response.data.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
 export const deleteTransaction = createAsyncThunk(
   'transactions/delete',
   async (id: string, { rejectWithValue }) => {
@@ -80,41 +84,40 @@ export const deleteTransaction = createAsyncThunk(
   }
 );
 
+
 const transactionSlice = createSlice({
   name: 'transactions',
   initialState,
-  reducers: {},
+  reducers: {
+    // This new action clears the selected transaction and resets the status
+    resetSelection: (state) => {
+      state.selectedTransaction = null;
+      state.status = 'idle';
+    }
+  },
   extraReducers: (builder: ActionReducerMapBuilder<TransactionState>) => {
     builder
-      // Reducers for the list of transactions
-      .addCase(fetchTransactions.pending, (state) => { 
-        state.status = 'loading'; 
-      })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.items = action.payload;
       })
-      .addCase(fetchTransactions.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = (action.payload as any)?.message || 'Failed to fetch transactions';
-      })
-      
-      // Reducer for adding a transaction
       .addCase(addTransaction.fulfilled, (state, action) => {
         state.items = [action.payload, ...state.items];
       })
-
-      // Reducers for fetching a single transaction for the details page
-      .addCase(fetchTransactionById.pending, (state) => {
+      .addCase(fetchTransactionById.pending, (state) => { 
         state.status = 'loading';
-        state.selectedTransaction = null;
       })
       .addCase(fetchTransactionById.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.selectedTransaction = action.payload;
       })
-
-      // Reducer for deleting a transaction
+      .addCase(updateTransaction.fulfilled, (state, action) => {
+        const index = state.items.findIndex(t => t._id === action.payload._id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+        state.selectedTransaction = action.payload;
+      })
       .addCase(deleteTransaction.fulfilled, (state, action) => {
         state.items = state.items.filter(t => t._id !== action.payload);
         state.selectedTransaction = null;
@@ -122,4 +125,6 @@ const transactionSlice = createSlice({
   },
 });
 
+// Export the new action
+export const { resetSelection } = transactionSlice.actions;
 export default transactionSlice.reducer;
