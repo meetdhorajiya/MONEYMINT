@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "MONEY-MINT",
+    "name": "",
     "slug": "MONEY-MINT",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon.jpg",
     "scheme": "moneymind",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
