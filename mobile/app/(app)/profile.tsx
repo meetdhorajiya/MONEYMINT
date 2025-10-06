@@ -35,7 +35,7 @@ export default function ProfileScreen() {
 
   const handleSignOut = () => dispatch(signOut());
   const handlePrivacyPolicy = () => Alert.alert("Privacy Policy", "Your data is stored securely and is not shared with any third parties.");
-  const handleContactUs = () => Alert.alert("Contact Us", "For support, please email us at:\nsupport@moneymindapp.com");
+  const handleContactUs = () => Alert.alert("Contact Us", "For support, please email us at:\nsupport@moneymint.com");
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
