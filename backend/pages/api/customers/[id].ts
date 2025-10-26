@@ -7,12 +7,20 @@ import Customer from '../../../models/Customer';
 import Transaction from '../../../models/Transaction';
 import mongoose from 'mongoose';
 
+// 1. Define the interface
+interface AuthenticatedRequest extends NextApiRequest {
+  userId: string;
+}
+
+// 2. Use the standard NextApiRequest here
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // ... (setup code is unchanged)
   await dbConnect();
-  const userId = (req as any).userId;
+
+  // 3. Cast the req *inside* the function
+  const userId = (req as AuthenticatedRequest).userId;
   const { id } = req.query;
 
+  // ... (rest of the file is unchanged)
   if (!mongoose.Types.ObjectId.isValid(id as string)) {
     return res.status(400).json({ success: false, message: 'Invalid customer ID' });
   }
@@ -22,11 +30,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!customer) {
     return res.status(404).json({ success: false, message: 'Customer not found' });
   }
-  // --- (end of setup) ---
 
   switch (req.method) {
     case 'GET':
-      // ... (This case is unchanged)
       try {
         return res.status(200).json({ success: true, data: customer });
       } catch (error) {
@@ -36,13 +42,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     case 'PUT':
       try {
-        const { name } = req.body; // <-- Removed 'phone'
+        const { name } = req.body;
         if (!name) {
           return res.status(400).json({ success: false, message: 'Name is required' });
         }
 
         customer.name = name;
-        // customer.phone = phone; // <-- Removed this line
         await customer.save();
         
         return res.status(200).json({ success: true, data: customer });
@@ -52,7 +57,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       }
 
     case 'DELETE':
-      // ... (This case is unchanged)
       try {
         await customer.deleteOne();
         await Transaction.deleteMany({
