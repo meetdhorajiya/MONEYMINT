@@ -1,3 +1,5 @@
+// mobile/app/add-transaction.tsx
+
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, Alert, Platform,
@@ -7,6 +9,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../hooks/useAuth';
 import { addTransaction } from '../store/slices/transactionSlice';
+import { fetchReportSummary } from '../store/slices/reportSlice'; 
 
 export default function AddTransactionScreen() {
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -15,7 +18,9 @@ export default function AddTransactionScreen() {
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { ledgerType } = useLocalSearchParams<{ ledgerType: string }>();
+  // --- THIS IS THE CHANGE ---
+  // We now get 'customerId' instead of 'ledgerType'
+  const { customerId } = useLocalSearchParams<{ customerId: string }>();
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -31,18 +36,20 @@ export default function AddTransactionScreen() {
     }
 
     setIsLoading(true);
+    // --- THIS IS THE UPDATED TRANSACTION OBJECT ---
     const newTransaction = {
       amount: numericAmount,
       type,
       category,
       description,
-      ledger: ledgerType,
+      customer: customerId || null, // Pass customerId or null
     };
     
     try {
       await dispatch(addTransaction(newTransaction)).unwrap();
+      dispatch(fetchReportSummary()); // Refresh reports
       router.back();
-    } catch (error: any)      {
+    } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to save transaction.');
     } finally {
       setIsLoading(false);
@@ -57,8 +64,8 @@ export default function AddTransactionScreen() {
       >
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <View className="p-6">
+            {/* Income/Expense Toggle */}
             <View className="flex-row mb-6 bg-gray-200 rounded-lg p-1">
-              {/* We now use the 'style' prop for the dynamic part */}
               <Pressable
                 className="flex-1 p-3 rounded-md"
                 style={type === 'expense' ? styles.selectedButton : styles.unselectedButton}
@@ -66,7 +73,6 @@ export default function AddTransactionScreen() {
               >
                 <Text className={`text-center font-bold ${type === 'expense' ? 'text-red-500' : 'text-gray-500'}`}>Expense (OUT)</Text>
               </Pressable>
-              
               <Pressable
                 className="flex-1 p-3 rounded-md"
                 style={type === 'income' ? styles.selectedButton : styles.unselectedButton}
@@ -76,6 +82,7 @@ export default function AddTransactionScreen() {
               </Pressable>
             </View>
 
+            {/* Amount Input */}
             <TextInput
               className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
               placeholder="Amount (₹)"
@@ -85,15 +92,17 @@ export default function AddTransactionScreen() {
               keyboardType="numeric"
             />
             
+            {/* Category Input (now always editable) */}
             <TextInput
               className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-              placeholder="Category (e.g., Food, Jack, Salary)"
+              placeholder="Category (e.g., Food, Salary)"
               placeholderTextColor="#9CA3AF"
               value={category}
               onChangeText={setCategory}
               autoCapitalize="words"
             />
 
+            {/* Description Input */}
             <TextInput
               className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200 h-24"
               placeholder="Remark / Description (Optional)"
@@ -103,6 +112,7 @@ export default function AddTransactionScreen() {
               multiline
             />
             
+            {/* Save Button */}
             <Pressable
               className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center"
               onPress={handleSaveTransaction}
@@ -121,13 +131,7 @@ export default function AddTransactionScreen() {
   );
 }
 
-// Create a StyleSheet for the styles that change
 const styles = StyleSheet.create({
-  selectedButton: {
-    backgroundColor: 'white',
-    // You can add shadow styles here if needed for Android/iOS
-  },
-  unselectedButton: {
-    backgroundColor: 'transparent',
-  }
+  selectedButton: { backgroundColor: 'white' },
+  unselectedButton: { backgroundColor: 'transparent' },
 });

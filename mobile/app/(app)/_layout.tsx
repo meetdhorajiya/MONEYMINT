@@ -29,6 +29,15 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+      name="reports"
+      options={{
+        title: 'Reports',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="stats-chart" size={size} color={color} />
+        ),
+      }}
+    />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+// mobile/app/(app)/dashboard.tsx
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
@@ -8,12 +9,13 @@ import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SummaryCards from '../../components/SummaryCards';
 import TransactionItem from '../../components/TransactionItem';
+import { RootState } from '../../store/store';
 
 export default function DashboardScreen() {
   const dispatch = useAppDispatch();
   const isFocused = useIsFocused();
-  const { items: allTransactions, status } = useAppSelector((state) => state.transactions);
-  const user = useAppSelector((state) => state.auth.user);
+  const { items: allTransactions, status } = useAppSelector((state: RootState) => state.transactions);
+  const user = useAppSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     if (isFocused) {
@@ -21,15 +23,23 @@ export default function DashboardScreen() {
     }
   }, [dispatch, isFocused]);
   
-  const personalTransactions = allTransactions.filter(t => t.ledger === 'personal');
+  // --- THIS IS THE UPDATED LOGIC ---
+  // A personal transaction is one that has no customer linked
+  const personalTransactions = useMemo(() => {
+    return allTransactions.filter(t => !t.customer);
+  }, [allTransactions]);
   
-  const totalIncome = personalTransactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = personalTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const netBalance = totalIncome - totalExpense;
+  const { totalIncome, totalExpense, netBalance } = useMemo(() => {
+    return personalTransactions.reduce(
+      (acc, t) => {
+        if (t.type === 'income') acc.totalIncome += t.amount;
+        if (t.type === 'expense') acc.totalExpense += t.amount;
+        acc.netBalance = acc.totalIncome - acc.totalExpense;
+        return acc;
+      },
+      { totalIncome: 0, totalExpense: 0, netBalance: 0 }
+    );
+  }, [personalTransactions]);
 
   const ListHeader = () => (
     <View>
@@ -43,10 +53,8 @@ export default function DashboardScreen() {
         totalExpense={totalExpense} 
       />
       <View className="px-6 mt-8">
-        <Link 
-          href={{ pathname: "/add-transaction", params: { ledgerType: 'personal' } }} 
-          asChild
-        >
+        {/* --- THIS LINK IS UPDATED (no params) --- */}
+        <Link href="/add-transaction" asChild>
           <TouchableOpacity className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center shadow-lg">
             <Ionicons name="add-circle" size={24} color="white" />
             <Text className="text-white text-lg font-bold ml-2">Add New Transaction</Text>
