@@ -107,7 +107,6 @@ export default function TransactionDetailsScreen() {
             </Text>
             
             <DetailRow label="Category" value={selectedTransaction.category} />
-            <DetailRow label="Ledger" value={selectedTransaction.ledger} />
             <DetailRow 
               label="Date & Time" 
               value={new Date(selectedTransaction.date).toLocaleString('en-IN', {

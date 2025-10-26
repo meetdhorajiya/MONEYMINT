@@ -21,6 +21,9 @@ export default function RootLayout() {
               name="add-transaction"
               options={{ presentation: 'modal', title: 'New Transaction' }}
             />
+
+            <Stack.Screen name="add-customer" options={{ presentation: 'modal', title: 'Add Customer' }} />
+            <Stack.Screen name="edit-customer" options={{ presentation: 'modal', title: 'Edit Customer' }} />
             
             {/* Regular screens that will get a back button */}
             <Stack.Screen name="settings" options={{ title: 'Settings' }} />

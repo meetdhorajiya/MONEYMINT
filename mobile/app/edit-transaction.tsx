@@ -7,6 +7,7 @@ import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '@/hooks/useAuth';
 import { updateTransaction, Transaction } from '@/store/slices/transactionSlice';
+import { fetchReportSummary } from '@/store/slices/reportSlice'; // 1. ADD THIS IMPORT
 
 type TransactionParams = { [K in keyof Transaction]: string };
 
@@ -48,7 +49,14 @@ export default function EditTransactionScreen() {
       date: params.date!,
     };
     try {
+      // 1. Wait for the transaction to update
       await dispatch(updateTransaction(updatedData)).unwrap();
+      
+      // 2. --- THIS IS THE NEW LINE ---
+      //    Refresh the report data in the background
+      dispatch(fetchReportSummary());
+
+      // 3. Go back
       router.back();
     } catch (error: any) {
       Alert.alert('Error Updating', error.message);
