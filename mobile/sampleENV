@@ -1,5 +1,0 @@
-# Local development backend
-EXPO_PUBLIC_API_URL_DEV=
-
-# Production backend (Vercel deployed)
-EXPO_PUBLIC_API_URL_PROD=
