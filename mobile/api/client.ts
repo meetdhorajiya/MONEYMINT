@@ -2,8 +2,8 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 // Load environment variables
-const developmentUrl = "http://10.198.136.222:3000/api"; // this file is showing in the commit because the updation of the developmentUrl,as when required. 
-const productionUrl = "https://moneymint-seven.vercel.app/api";
+const developmentUrl = process.env.MOBILE_DEV_URL
+const productionUrl = process.env.MOBILE_PRO_URL
 
 // Choose correct base URL
 const API_BASE_URL = __DEV__ ? developmentUrl : productionUrl;
