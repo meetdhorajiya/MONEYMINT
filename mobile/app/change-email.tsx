@@ -1,11 +1,21 @@
 // mobile/app/(app)/change-email.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useAppDispatch } from '@/hooks/useAuth';
 import { changeEmail } from '@/store/slices/authSlice';
-import { Ionicons } from '@expo/vector-icons';
+import { ScreenContainer, Surface } from '@/components/ui/ScreenContainer';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function ChangeEmailScreen() {
   const [newEmail, setNewEmail] = useState('');
@@ -13,6 +23,19 @@ export default function ChangeEmailScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { theme } = useTheme();
+
+  const inputStyle = {
+    backgroundColor: theme.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.border,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: theme.textPrimary,
+    marginTop: 12,
+  } as const;
 
   const handleUpdateEmail = async () => {
     if (!newEmail || !currentPassword) {
@@ -32,36 +55,68 @@ export default function ChangeEmailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <ScreenContainer edges={['top', 'left', 'right']}>
       <Stack.Screen options={{ title: 'Change Email' }} />
-      <View className="p-6">
-        <Text className="text-lg text-gray-600 mb-4">Enter your new email and current password to confirm the change.</Text>
-        <TextInput
-          className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-          placeholder="New Email"
-          placeholderTextColor="#9CA3AF"
-          value={newEmail}
-          onChangeText={setNewEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200"
-          placeholder="Current Password"
-          placeholderTextColor="#9CA3AF"
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-          secureTextEntry
-          style={{ color: '#1F2937' }}
-        />
-        <TouchableOpacity 
-          className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center"
-          onPress={handleUpdateEmail}
-          disabled={isLoading}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 48, gap: 24 }}
         >
-          {isLoading ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-lg">Save Changes</Text>}
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <View>
+            <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: '800' }}>Update your email</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 8 }}>
+              Use an email you actively monitor. We'll send confirmations there.
+            </Text>
+          </View>
+
+          <Surface>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>New email address</Text>
+            <TextInput
+              style={inputStyle}
+              placeholder="you@example.com"
+              placeholderTextColor={theme.textSecondary}
+              value={newEmail}
+              onChangeText={setNewEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+
+            <View style={{ marginTop: 20 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Current password</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="Enter your password"
+                placeholderTextColor={theme.textSecondary}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry
+                returnKeyType="done"
+              />
+            </View>
+          </Surface>
+
+          <TouchableOpacity
+            onPress={handleUpdateEmail}
+            disabled={isLoading}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: theme.accent,
+              borderRadius: 22,
+              paddingVertical: 18,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 10,
+              opacity: isLoading ? 0.7 : 1,
+            }}
+          >
+            {isLoading ? <ActivityIndicator color={theme.onAccent} /> : null}
+            <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700' }}>Save Changes</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }

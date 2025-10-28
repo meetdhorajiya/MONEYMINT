@@ -1,16 +1,28 @@
 // mobile/app/(app)/delete-account.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { Stack } from 'expo-router';
 import { useAppDispatch } from '@/hooks/useAuth';
 import { deleteAccount } from '@/store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
+import { ScreenContainer, Surface } from '@/components/ui/ScreenContainer';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function DeleteAccountScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
+  const { theme } = useTheme();
 
   const handleDelete = () => {
     Alert.alert(
@@ -42,34 +54,90 @@ export default function DeleteAccountScreen() {
     );
   };
 
+  const inputStyle = {
+    backgroundColor: theme.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.border,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: theme.textPrimary,
+    marginTop: 12,
+  } as const;
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <ScreenContainer edges={['top', 'left', 'right']}>
       <Stack.Screen options={{ title: 'Delete Account' }} />
-      <View className="p-6">
-        <View className="items-center mb-6">
-          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-          <Text className="text-2xl font-bold text-center mt-4">Delete Your Account</Text>
-        </View>
-        <Text className="text-lg text-center text-gray-600 mb-6">
-          To permanently delete your account and all of its data, please enter your current password.
-        </Text>
-        <TextInput
-          className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200"
-          placeholder="Enter your password"
-          placeholderTextColor="#9CA3AF"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={{ color: '#1F2937' }}
-        />
-        <TouchableOpacity 
-          className="bg-red-600 p-4 rounded-lg flex-row justify-center items-center"
-          onPress={handleDelete}
-          disabled={isLoading}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 48, gap: 24 }}
         >
-          {isLoading ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-lg">Confirm Deletion</Text>}
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <Surface muted>
+            <View style={{ alignItems: 'center' }}>
+              <View
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 24,
+                  backgroundColor: '#FEE2E2',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="alert-circle" size={40} color={theme.danger} />
+              </View>
+              <Text style={{ color: theme.textPrimary, fontSize: 26, fontWeight: '800', marginTop: 16 }}>
+                Delete your account
+              </Text>
+              <Text style={{ color: theme.textSecondary, textAlign: 'center', marginTop: 10 }}>
+                Once confirmed, all of your data will be permanently removed.
+                This action cannot be undone.
+              </Text>
+            </View>
+          </Surface>
+
+          <Surface>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Confirm with password</Text>
+            <TextInput
+              style={inputStyle}
+              placeholder="Enter your password"
+              placeholderTextColor={theme.textSecondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              returnKeyType="done"
+            />
+            <Text style={{ color: theme.textSecondary, marginTop: 12, fontSize: 13 }}>
+              We use this step to make sure you are the account owner.
+            </Text>
+          </Surface>
+
+          <TouchableOpacity
+            onPress={handleDelete}
+            disabled={isLoading}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: theme.danger,
+              borderRadius: 22,
+              paddingVertical: 18,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 10,
+              opacity: isLoading ? 0.7 : 1,
+            }}
+          >
+            {isLoading ? <ActivityIndicator color={theme.onAccent} /> : null}
+            <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700' }}>Confirm deletion</Text>
+          </TouchableOpacity>
+
+          <Text style={{ color: theme.textSecondary, textAlign: 'center', fontSize: 13 }}>
+            You will be signed out automatically after deletion.
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }

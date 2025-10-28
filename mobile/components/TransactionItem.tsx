@@ -1,37 +1,102 @@
 // mobile/components/TransactionItem.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Transaction } from '../store/slices/transactionSlice';
+import type { Transaction } from '../store/slices/transactionSlice';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { useTheme } from './ThemeProvider';
+import { useAppSelector } from '../hooks/useAuth';
 
 export default function TransactionItem({ item }: { item: Transaction }) {
   const isExpense = item.type === 'expense';
-  const amountColor = isExpense ? 'text-red-600' : 'text-green-600';
   const sign = isExpense ? '-' : '+';
-  const iconName = isExpense ? 'arrow-down-circle' : 'arrow-up-circle';
-  const iconColor = isExpense ? '#DC2626' : '#16A34A';
+  const iconName = isExpense ? 'trending-down' : 'trending-up';
+  const { theme } = useTheme();
+  const customers = useAppSelector((state) => state.customers.items);
+
+  const ledgerLabel = useMemo(() => {
+    if (!item.customer) return 'Personal';
+    return customers.find((customer) => customer._id === item.customer)?.name ?? 'Linked customer';
+  }, [customers, item.customer]);
 
   return (
-    <Link 
-      href={{ 
-        pathname: '/transaction-details', 
-        params: { transactionId: item._id } 
-      }} 
+    <Link
+      href={{
+        pathname: '/transaction-details',
+        params: { transactionId: item._id },
+      }}
       asChild
     >
-      <Pressable>
-        <View className="flex-row items-center px-6 py-4 bg-white border-b border-gray-100">
-          <View className="mr-4">
-            <Ionicons name={iconName} size={40} color={iconColor} />
-          </View>
-          <View className="flex-1">
-            <Text className="text-base font-bold text-gray-800 capitalize">{item.category}</Text>
-            <Text className="text-sm text-gray-500">{new Date(item.date).toLocaleDateString()}</Text>
-          </View>
-          <Text className={`text-lg font-bold ${amountColor}`}>{sign}₹{item.amount.toFixed(2)}</Text>
+      <Pressable
+        style={{
+          backgroundColor: theme.surface,
+          marginHorizontal: 24,
+          marginBottom: 16,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.border,
+          paddingVertical: 16,
+          paddingHorizontal: 18,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: isExpense ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.15)',
+            padding: 10,
+            borderRadius: 16,
+            marginRight: 16,
+          }}
+        >
+          <Ionicons
+            name={iconName}
+            size={22}
+            color={isExpense ? theme.danger : theme.success}
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              color: theme.textPrimary,
+              fontSize: 16,
+              fontWeight: '700',
+              textTransform: 'capitalize',
+            }}
+            numberOfLines={1}
+          >
+            {item.category}
+          </Text>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              marginTop: 4,
+            }}
+          >
+            {new Date(item.date).toLocaleDateString('en-IN', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            })}
+          </Text>
+        </View>
+
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text
+            style={{
+              color: isExpense ? theme.danger : theme.success,
+              fontSize: 18,
+              fontWeight: '800',
+            }}
+          >
+            {sign}₹{item.amount.toFixed(2)}
+          </Text>
+          <Text style={{ color: theme.textSecondary, marginTop: 4 }}>
+            {ledgerLabel}
+          </Text>
         </View>
       </Pressable>
     </Link>
   );
-};
+}

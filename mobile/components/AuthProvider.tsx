@@ -5,6 +5,7 @@ import { useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '../hooks/useAuth';
 import * as SecureStore from 'expo-secure-store';
 import { hydrateAuth, signOut, setLoading } from '../store/slices/authSlice';
+import { useTheme } from './ThemeProvider';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -12,6 +13,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const checkStoredToken = async () => {
@@ -43,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View className="flex-1 justify-center items-center" style={{ backgroundColor: theme.background }}>
+        <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
   }

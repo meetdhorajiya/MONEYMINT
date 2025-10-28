@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { View, Text } from 'react-native';
+import { Surface } from './ui/ScreenContainer';
+import { useTheme } from './ThemeProvider';
 
 interface SummaryCardsProps {
   netBalance: number;
@@ -10,26 +12,93 @@ interface SummaryCardsProps {
 }
 
 export default function SummaryCards({ netBalance, totalIncome, totalExpense }: SummaryCardsProps) {
+  const { theme } = useTheme();
+  const isPositive = netBalance >= 0;
+
   return (
-    <View className="px-6 space-y-4">
-      {/* Net Balance Card */}
-      <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <Text className="text-lg font-semibold text-gray-600">Net Balance</Text>
-        <Text className={`text-3xl font-bold mt-1 ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+    <View style={{ gap: 16 }}>
+      <Surface
+        highlight
+        style={{
+          padding: 28,
+          borderRadius: 28,
+          borderWidth: 0,
+        }}
+      >
+        <Text style={{ color: theme.onAccent, opacity: 0.85, fontSize: 16, fontWeight: '600' }}>
+          Net Balance
+        </Text>
+        <Text
+          style={{
+            color: theme.onAccent,
+            fontSize: 36,
+            fontWeight: '800',
+            marginTop: 8,
+          }}
+        >
           ₹{netBalance.toFixed(2)}
         </Text>
-      </View>
-      
-      {/* Income and Expense Cards */}
-      <View className="flex-row space-x-4">
-        <View className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <Text className="text-md font-semibold text-gray-600">Total Income</Text>
-          <Text className="text-2xl font-bold text-green-600 mt-1">₹{totalIncome.toFixed(2)}</Text>
-        </View>
-        <View className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <Text className="text-md font-semibold text-gray-600">Total Expense</Text>
-          <Text className="text-2xl font-bold text-red-600 mt-1">₹{totalExpense.toFixed(2)}</Text>
-        </View>
+        <Text
+          style={{
+            color: theme.onAccent,
+            marginTop: 8,
+            fontSize: 14,
+            opacity: 0.85,
+          }}
+        >
+          {isPositive ? 'Great job! Your balance is growing.' : 'Let’s rebalance your spending today.'}
+        </Text>
+      </Surface>
+
+      <View style={{ flexDirection: 'row', gap: 16 }}>
+        <Surface style={{ flex: 1, borderRadius: 24 }}>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontSize: 15,
+              fontWeight: '600',
+            }}
+          >
+            Total Income
+          </Text>
+          <Text
+            style={{
+              color: theme.success,
+              fontSize: 28,
+              fontWeight: '800',
+              marginTop: 6,
+            }}
+          >
+            ₹{totalIncome.toFixed(2)}
+          </Text>
+          <Text style={{ color: theme.textSecondary, marginTop: 8 }}>
+            Inflows recorded this period
+          </Text>
+        </Surface>
+        <Surface style={{ flex: 1, borderRadius: 24 }}>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontSize: 15,
+              fontWeight: '600',
+            }}
+          >
+            Total Expense
+          </Text>
+          <Text
+            style={{
+              color: theme.danger,
+              fontSize: 28,
+              fontWeight: '800',
+              marginTop: 6,
+            }}
+          >
+            ₹{totalExpense.toFixed(2)}
+          </Text>
+          <Text style={{ color: theme.textSecondary, marginTop: 8 }}>
+            Outflows across every ledger
+          </Text>
+        </Surface>
       </View>
     </View>
   );
