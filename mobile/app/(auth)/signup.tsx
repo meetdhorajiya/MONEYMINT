@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ViewStyle,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppDispatch } from '../../hooks/useAuth';
-import { signIn } from '../../store/slices/authSlice';
-import apiClient from '../../api/client';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useAppDispatch } from '@/hooks/useAuth';
+import { signIn } from '@/store/slices/authSlice';
+import apiClient from '@/api/client';
+import { ScreenContainer, Surface } from '@/components/ui/ScreenContainer';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function SignUpScreen() {
   const [name, setName] = useState('');
@@ -15,81 +26,159 @@ export default function SignUpScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { theme } = useTheme();
+
+  const inputStyle = useMemo(
+    () => ({
+      flex: 1,
+      fontSize: 16,
+      color: theme.textPrimary,
+      paddingVertical: 12,
+    }),
+    [theme.textPrimary],
+  );
+
+  const fieldWrapperStyle = useMemo<ViewStyle>(
+    () => ({
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
+      paddingHorizontal: 16,
+      paddingVertical: 4,
+      marginTop: 16,
+      gap: 12,
+    }),
+    [theme.border, theme.surface],
+  );
 
   const handleSignUp = async () => {
     if (!name || !email || !password) {
-      Alert.alert('Missing Fields', 'Please fill in all fields.');
+      Alert.alert('Missing fields', 'Please fill in all fields.');
       return;
     }
     if (password.length < 6) {
-        Alert.alert('Weak Password', 'Password must be at least 6 characters long.');
-        return;
+      Alert.alert('Weak password', 'Password must be at least 6 characters long.');
+      return;
     }
 
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/auth/signup', { name, email: email.toLowerCase(),password});
+      const response = await apiClient.post('/auth/signup', {
+        name: name.trim(),
+        email: email.toLowerCase(),
+        password,
+      });
       dispatch(signIn(response.data));
     } catch (error: any) {
-      Alert.alert('Sign Up Failed', error.response?.data?.message || 'An unexpected error occurred.');
+      Alert.alert('Sign up failed', error.response?.data?.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <LinearGradient colors={['#FFFFFF', '#E0EFFF']} className="flex-1">
-      <SafeAreaView className="flex-1">
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
-          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-            <View className="p-8">
-              <View className="items-center mb-10">
-                <View className="bg-blue-100 p-4 rounded-full">
-                    <Ionicons name="person-add-outline" size={48} color="#007AFF" />
-                </View>
-                <Text className="text-4xl font-bold text-gray-800 mt-4">Create Account</Text>
-                <Text className="text-lg text-gray-500">Get started with your new account</Text>
-              </View>
-
-              {/* Full Name Input with Icon */}
-              <View className="flex-row items-center bg-white p-3 rounded-xl mb-4 border border-gray-200">
-                <Ionicons name="person-outline" size={24} color="gray" className="mr-3" />
-                <TextInput className="flex-1 text-lg" placeholder="Full Name" placeholderTextColor="#9CA3AF" value={name} onChangeText={setName} />
-              </View>
-
-              {/* Email Input with Icon */}
-              <View className="flex-row items-center bg-white p-3 rounded-xl mb-4 border border-gray-200">
-                <Ionicons name="mail-outline" size={24} color="gray" className="mr-3" />
-                <TextInput className="flex-1 text-lg" placeholder="Email" placeholderTextColor="#9CA3AF" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-              </View>
-
-              {/* Password Input with Icon */}
-              <View className="flex-row items-center bg-white p-3 rounded-xl mb-6 border border-gray-200">
-                <Ionicons name="lock-closed-outline" size={24} color="gray" className="mr-3" />
-                <TextInput className="flex-1 text-lg" placeholder="Password (min. 6 characters)" placeholderTextColor="#9CA3AF" style={{ color: '#1F2937' }} value={password} onChangeText={setPassword} secureTextEntry />
-              </View>
-
-              <TouchableOpacity 
-                className="bg-blue-600 p-4 rounded-xl flex-row justify-center items-center shadow-md shadow-blue-300"
-                onPress={handleSignUp}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text className="text-white text-center text-lg font-bold">Sign Up</Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity className="mt-8" onPress={() => router.back()}>
-                <Text className="text-center text-gray-600 font-semibold">
-                  Already have an account? <Text className="text-blue-600 font-bold">Sign In</Text>
-                </Text>
-              </TouchableOpacity>
+    <ScreenContainer edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 48, flexGrow: 1, justifyContent: 'center', gap: 24 }}
+        >
+          <View style={{ alignItems: 'center' }}>
+            <View
+              style={{
+                backgroundColor: theme.accent + '22',
+                padding: 16,
+                borderRadius: 32,
+              }}
+            >
+              <Ionicons name="person-add-outline" size={42} color={theme.accent} />
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </LinearGradient>
+            <Text style={{ color: theme.textPrimary, fontSize: 32, fontWeight: '800', marginTop: 16 }}>Create an account</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 6 }}>
+              Get started with a fresh view of your finances.
+            </Text>
+          </View>
+
+          <Surface>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Full name</Text>
+            <View style={fieldWrapperStyle}>
+              <Ionicons name="person-outline" size={22} color={theme.textSecondary} />
+              <TextInput
+                style={inputStyle}
+                placeholder="E.g. Asha Patel"
+                placeholderTextColor={theme.textSecondary}
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={{ marginTop: 20 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Email</Text>
+              <View style={fieldWrapperStyle}>
+                <Ionicons name="mail-outline" size={22} color={theme.textSecondary} />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="you@example.com"
+                  placeholderTextColor={theme.textSecondary}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  returnKeyType="next"
+                />
+              </View>
+            </View>
+
+            <View style={{ marginTop: 20 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Password</Text>
+              <View style={fieldWrapperStyle}>
+                <Ionicons name="lock-closed-outline" size={22} color={theme.textSecondary} />
+                <TextInput
+                  style={inputStyle}
+                  placeholder="At least 6 characters"
+                  placeholderTextColor={theme.textSecondary}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  returnKeyType="done"
+                />
+              </View>
+            </View>
+          </Surface>
+
+          <TouchableOpacity
+            onPress={handleSignUp}
+            disabled={isLoading}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: theme.accent,
+              borderRadius: 22,
+              paddingVertical: 18,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 10,
+              opacity: isLoading ? 0.7 : 1,
+            }}
+          >
+            {isLoading ? <ActivityIndicator color={theme.onAccent} /> : null}
+            <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700' }}>Create account</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>
+            <Text style={{ textAlign: 'center', color: theme.textSecondary }}>
+              Already have an account?{' '}
+              <Text style={{ color: theme.accent, fontWeight: '700' }}>Sign in</Text>
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }
