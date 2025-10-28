@@ -60,7 +60,6 @@ export default function CustomerDetailScreen() {
       {/* Customer Info */}
       <View className="p-6">
         <Text className="text-3xl font-bold text-gray-800">{customer?.name}</Text>
-        <Text className="text-lg text-gray-500">{customer?.phone}</Text>
       </View>
       
       {/* Summary Cards */}

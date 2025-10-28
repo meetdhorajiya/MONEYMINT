@@ -1,67 +1,113 @@
 // mobile/app/add-customer.tsx
 
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppDispatch } from '../hooks/useAuth';
-import { addCustomer } from '../store/slices/customerSlice';
+import React, { useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { useAppDispatch } from '@/hooks/useAuth';
+import { addCustomer } from '@/store/slices/customerSlice';
+import { ScreenContainer, Surface } from '@/components/ui/ScreenContainer';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function AddCustomerScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  
+  const { theme } = useTheme();
+
   const [name, setName] = useState('');
-  // const [phone, setPhone] = useState(''); // <-- Removed phone state
   const [isLoading, setIsLoading] = useState(false);
+
+  const inputStyle = useMemo(
+    () => ({
+      backgroundColor: theme.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      fontSize: 16,
+      color: theme.textPrimary,
+      marginTop: 12,
+    }),
+    [theme.border, theme.surface, theme.textPrimary],
+  );
 
   const handleSave = async () => {
     if (!name || name.trim() === '') {
-      Alert.alert('Name Required', 'Please enter a customer name.');
+      Alert.alert('Name required', 'Please enter a customer name.');
       return;
     }
 
     setIsLoading(true);
     try {
-      // <-- Removed 'phone' from dispatch
-      await dispatch(addCustomer({ name: name.trim() })).unwrap();
-      router.back(); 
+  await dispatch(addCustomer({ name: name.trim() })).unwrap();
+      router.back();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to add customer.');
+      Alert.alert('Unable to add customer', error?.message || 'Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <Stack.Screen options={{ title: 'Add New Customer' }} />
-
-      <View className="p-6">
-        <Text className="text-lg text-gray-600 mb-2">Customer Name</Text>
-        <TextInput
-          className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-          placeholder="e.g., Keval Shah"
-          autoFocus={true}
-        />
-        
-        {/* <-- Removed the Phone Number TextInput --> */}
-        
-        <Pressable
-          className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center shadow-lg"
-          onPress={handleSave}
-          disabled={isLoading}
+    <ScreenContainer edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: 'Add Customer' }} />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 48, gap: 24 }}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-white text-center text-lg font-bold">Save Customer</Text>
-          )}
-        </Pressable>
-      </View>
-    </SafeAreaView>
+          <View>
+            <Text style={{ color: theme.textPrimary, fontSize: 32, fontWeight: '800' }}>Create a new customer</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 8 }}>
+              Add someone you regularly work with to keep their transactions organised.
+            </Text>
+          </View>
+
+          <Surface>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Customer name</Text>
+            <TextInput
+              style={inputStyle}
+              placeholder="E.g. Keval Shah"
+              placeholderTextColor={theme.textSecondary}
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              autoFocus
+              returnKeyType="next"
+            />
+
+          </Surface>
+
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={isLoading}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: theme.accent,
+              borderRadius: 22,
+              paddingVertical: 18,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 10,
+              opacity: isLoading ? 0.7 : 1,
+            }}
+          >
+            {isLoading ? <ActivityIndicator color={theme.onAccent} /> : null}
+            <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700' }}>Save Customer</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }

@@ -1,15 +1,27 @@
 // mobile/app/add-transaction.tsx
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  View, Text, TextInput, Alert, Platform,
-  KeyboardAvoidingView, ActivityIndicator, ScrollView, Pressable, StyleSheet,
+  View,
+  Text,
+  TextInput,
+  Alert,
+  Platform,
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppDispatch } from '../hooks/useAuth';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { ScreenContainer } from '../components/ui/ScreenContainer';
+import { SegmentToggle } from '../components/ui/SegmentToggle';
+import { useAppDispatch, useAppSelector } from '../hooks/useAuth';
 import { addTransaction } from '../store/slices/transactionSlice';
-import { fetchReportSummary } from '../store/slices/reportSlice'; 
+import { useTheme } from '../components/ThemeProvider';
+
+type AddTransactionParams = {
+  customerId?: string;
+};
 
 export default function AddTransactionScreen() {
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -18,120 +30,143 @@ export default function AddTransactionScreen() {
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- THIS IS THE CHANGE ---
-  // We now get 'customerId' instead of 'ledgerType'
-  const { customerId } = useLocalSearchParams<{ customerId: string }>();
+  const { customerId } = useLocalSearchParams<AddTransactionParams>();
+  const normalizedCustomerId = useMemo(
+    () => (customerId && typeof customerId === 'string' && customerId.length ? customerId : undefined),
+    [customerId],
+  );
+  const customerName = useAppSelector((state) =>
+    normalizedCustomerId
+      ? state.customers.items.find((customer) => customer._id === normalizedCustomerId)?.name ?? null
+      : null,
+  );
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { theme } = useTheme();
+
+  const inputStyle = {
+    backgroundColor: theme.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.border,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: theme.textPrimary,
+    marginTop: 12,
+  } as const;
 
   const handleSaveTransaction = async () => {
     if (!amount || !category) {
-      Alert.alert('Missing Information', 'Please enter an amount and a category.');
+      Alert.alert('Missing information', 'Please enter an amount and a category.');
       return;
     }
+
     const numericAmount = parseFloat(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid number.');
+    if (Number.isNaN(numericAmount) || numericAmount <= 0) {
+      Alert.alert('Invalid amount', 'Please enter a valid number.');
       return;
     }
 
     setIsLoading(true);
-    // --- THIS IS THE UPDATED TRANSACTION OBJECT ---
     const newTransaction = {
       amount: numericAmount,
       type,
       category,
       description,
-      customer: customerId || null, // Pass customerId or null
+      customer: normalizedCustomerId ?? null,
     };
-    
+
     try {
       await dispatch(addTransaction(newTransaction)).unwrap();
-      dispatch(fetchReportSummary()); // Refresh reports
       router.back();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save transaction.');
+      Alert.alert('Error', error?.message || 'Failed to save transaction.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        className="flex-1"
-      >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="p-6">
-            {/* Income/Expense Toggle */}
-            <View className="flex-row mb-6 bg-gray-200 rounded-lg p-1">
-              <Pressable
-                className="flex-1 p-3 rounded-md"
-                style={type === 'expense' ? styles.selectedButton : styles.unselectedButton}
-                onPress={() => setType('expense')}
-              >
-                <Text className={`text-center font-bold ${type === 'expense' ? 'text-red-500' : 'text-gray-500'}`}>Expense (OUT)</Text>
-              </Pressable>
-              <Pressable
-                className="flex-1 p-3 rounded-md"
-                style={type === 'income' ? styles.selectedButton : styles.unselectedButton}
-                onPress={() => setType('income')}
-              >
-                <Text className={`text-center font-bold ${type === 'income' ? 'text-green-500' : 'text-gray-500'}`}>Income (IN)</Text>
-              </Pressable>
+    <ScreenContainer edges={['left', 'right', 'bottom']}>
+      <Stack.Screen options={{ title: 'New Transaction' }} />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+          <View style={{ paddingTop: 12 }}>
+            <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15 }}>Select flow</Text>
+            <View style={{ marginTop: 12 }}>
+              <SegmentToggle value={type} onChange={setType} />
             </View>
 
-            {/* Amount Input */}
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-              placeholder="Amount (₹)"
-              placeholderTextColor="#9CA3AF"
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-            />
-            
-            {/* Category Input (now always editable) */}
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-              placeholder="Category (e.g., Food, Salary)"
-              placeholderTextColor="#9CA3AF"
-              value={category}
-              onChangeText={setCategory}
-              autoCapitalize="words"
-            />
+            <View style={{ marginTop: 24 }}>
+              <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15 }}>Amount (₹)</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="E.g. 1250"
+                placeholderTextColor={theme.textSecondary}
+                value={amount}
+                onChangeText={setAmount}
+                keyboardType="decimal-pad"
+                returnKeyType="next"
+              />
+            </View>
 
-            {/* Description Input */}
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200 h-24"
-              placeholder="Remark / Description (Optional)"
-              placeholderTextColor="#9CA3AF"
-              value={description}
-              onChangeText={setDescription}
-              multiline
-            />
-            
-            {/* Save Button */}
-            <Pressable
-              className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center"
-              onPress={handleSaveTransaction}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white text-center text-lg font-bold">Save Transaction</Text>
-              )}
-            </Pressable>
+            <View>
+              <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15, marginTop: 20 }}>Category</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="E.g. Groceries, Rent, Salary"
+                placeholderTextColor={theme.textSecondary}
+                value={category}
+                onChangeText={setCategory}
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View>
+              <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15, marginTop: 20 }}>Notes (optional)</Text>
+              <TextInput
+                style={{
+                  ...inputStyle,
+                  height: 120,
+                  textAlignVertical: 'top',
+                }}
+                placeholder="Add a quick remark to remember this transaction"
+                placeholderTextColor={theme.textSecondary}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+              />
+            </View>
+
+            <View style={{ marginTop: 32 }}>
+              <TouchableOpacity
+                onPress={handleSaveTransaction}
+                disabled={isLoading}
+                style={{
+                  backgroundColor: theme.accent,
+                  borderRadius: 22,
+                  paddingVertical: 18,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 10,
+                  opacity: isLoading ? 0.7 : 1,
+                }}
+              >
+                {isLoading ? <ActivityIndicator color={theme.onAccent} /> : null}
+                <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700' }}>Save Transaction</Text>
+              </TouchableOpacity>
+              <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 12, textAlign: 'center' }}>
+                {normalizedCustomerId
+                  ? `Saved for ${customerName ?? 'this customer'}.`
+                  : 'Saved to your personal records automatically.'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  selectedButton: { backgroundColor: 'white' },
-  unselectedButton: { backgroundColor: 'transparent' },
-});

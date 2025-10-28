@@ -1,95 +1,160 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity, ScrollView, Alert, TouchableOpacityProps } from 'react-native';
+import { Stack, Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
 import { signOut } from '../../store/slices/authSlice';
-import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { ScreenContainer, Surface } from '../../components/ui/ScreenContainer';
+import { useTheme } from '../../components/ThemeProvider';
 
-// This reusable component is exported so `settings.tsx` can use it too.
-export const ProfileMenuItem = ({ icon, text, isComingSoon = false, onPress }: {
+type ProfileMenuItemProps = TouchableOpacityProps & {
   icon: keyof typeof Ionicons.glyphMap;
   text: string;
   isComingSoon?: boolean;
-  onPress?: () => void;
-}) => (
-  <TouchableOpacity 
-    onPress={onPress} 
-    disabled={isComingSoon || !onPress}
-    className="flex-row items-center p-4 bg-white border-b border-gray-100 first:border-transparent"
-    activeOpacity={0.6}
-  >
-    <Ionicons name={icon} size={24} color="#4B5563" />
-    <Text className="text-lg text-gray-800 ml-5 flex-1">{text}</Text>
-    {isComingSoon ? (
-      <Text className="text-sm text-gray-400">Coming Soon</Text>
-    ) : (
-      <Ionicons name="chevron-forward-outline" size={24} color="#9CA3AF" />
-    )}
-  </TouchableOpacity>
-);
+  showDivider?: boolean;
+};
+
+// Shared menu item between Profile and Settings screens.
+export const ProfileMenuItem = ({
+  icon,
+  text,
+  isComingSoon = false,
+  showDivider = true,
+  style,
+  disabled,
+  ...touchableProps
+}: ProfileMenuItemProps) => {
+  const { theme } = useTheme();
+  const isDisabled = Boolean(disabled) || isComingSoon;
+
+  return (
+    <TouchableOpacity
+      {...touchableProps}
+      activeOpacity={0.75}
+      disabled={isDisabled}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 24,
+          paddingVertical: 18,
+          borderBottomWidth: showDivider ? 1 : 0,
+          borderBottomColor: theme.border,
+          opacity: isComingSoon ? 0.6 : 1,
+          backgroundColor: 'transparent',
+        },
+        style,
+      ]}
+    >
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 14,
+          backgroundColor: theme.surfaceMuted,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: 16,
+        }}
+      >
+        <Ionicons name={icon} size={22} color={theme.accent} />
+      </View>
+
+      <Text
+        style={{
+          flex: 1,
+          color: theme.textPrimary,
+          fontSize: 16,
+          fontWeight: '600',
+        }}
+      >
+        {text}
+      </Text>
+
+      {isComingSoon ? (
+        <Text style={{ color: theme.textSecondary, fontSize: 13 }}>Coming soon</Text>
+      ) : (
+        <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+      )}
+    </TouchableOpacity>
+  );
+};
 
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const { theme } = useTheme();
 
   const handleSignOut = () => dispatch(signOut());
-  const handlePrivacyPolicy = () => Alert.alert("Privacy Policy", "Your data is stored securely and is not shared with any third parties.");
-  const handleContactUs = () => Alert.alert("Contact Us", "For support, please email us at:\nsupport@moneymint.com");
+  const handlePrivacyPolicy = () =>
+    Alert.alert('Privacy Policy', 'Your data is stored securely and is not shared with any third parties.');
+  const handleContactUs = () =>
+    Alert.alert('Contact Us', 'For support, please email us at:\nsupport@moneymint.com');
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <ScrollView>
-        {/* User Info Header */}
-        <View className="p-6">
-            <Text className="text-3xl font-bold text-gray-800 mb-4">Profile</Text>
-            <View className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <View className="flex-row items-center">
-                    <Ionicons name="person-circle" size={64} color="#007AFF" />
-                    <View className="ml-4 flex-1">
-                        <Text className="text-sm text-gray-500">Name</Text>
-                        <Text className="text-2xl font-bold text-gray-800">{user?.name}</Text>
-                    </View>
-                </View>
-                <View className="border-t border-gray-100 mt-4 pt-4">
-                    <Text className="text-sm text-gray-500">Email</Text>
-                    <View className="flex-row items-center mt-1">
-                        <Ionicons name="mail-outline" size={20} color="#6B7280" />
-                        <Text className="text-base text-gray-600 ml-2">{user?.email}</Text>
-                    </View>
-                </View>
-            </View>
+    <ScreenContainer edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ title: 'Profile' }} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 48, gap: 24 }}
+      >
+        <View>
+          <Text style={{ color: theme.textPrimary, fontSize: 32, fontWeight: '800' }}>Profile</Text>
+          <Text style={{ color: theme.textSecondary, marginTop: 8 }}>
+            Manage your account preferences and keep details up to date.
+          </Text>
         </View>
 
-        {/* Menu Options */}
-        <View className="px-6">
-            <View className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <Link href="/settings" asChild>
-                  <TouchableOpacity>
-                    <ProfileMenuItem icon="settings-outline" text="Settings" />
-                  </TouchableOpacity>
-                </Link>
-                <ProfileMenuItem icon="call-outline" text="Contact Us" onPress={handleContactUs} />
-                <ProfileMenuItem icon="shield-checkmark-outline" text="Privacy Policy" onPress={handlePrivacyPolicy} />
-                <ProfileMenuItem icon="color-palette-outline" text="Themes" isComingSoon={true} />
+        <Surface>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="person-circle" size={68} color={theme.accent} />
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Name</Text>
+              <Text style={{ color: theme.textPrimary, fontSize: 24, fontWeight: '800', marginTop: 4 }}>
+                {user?.name || '—'}
+              </Text>
             </View>
-        </View>
-        
-        {/* Sign Out Button */}
-        <View className="px-6 mt-8">
-          <TouchableOpacity 
-            className="bg-red-50 p-4 rounded-xl flex-row justify-center items-center"
-            onPress={handleSignOut}
-          >
-            <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-            <Text className="text-red-600 text-lg font-bold ml-2">Log Out</Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+          <View style={{ borderTopWidth: 1, borderTopColor: theme.border, marginTop: 18, paddingTop: 18 }}>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Email</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+              <Ionicons name="mail-outline" size={20} color={theme.textSecondary} />
+              <Text style={{ color: theme.textPrimary, fontSize: 16, marginLeft: 8 }}>{user?.email || '—'}</Text>
+            </View>
+          </View>
+        </Surface>
 
-        <View className="items-center mt-12 pb-6">
-            <Text className="text-gray-400">App Version 1.0.0</Text>
+        <Surface style={{ padding: 0, overflow: 'hidden' }}>
+          <Link href="/settings" asChild>
+            <ProfileMenuItem icon="settings-outline" text="Settings" />
+          </Link>
+          <ProfileMenuItem icon="call-outline" text="Contact Us" onPress={handleContactUs} />
+          <ProfileMenuItem icon="shield-checkmark-outline" text="Privacy Policy" onPress={handlePrivacyPolicy} />
+          <ProfileMenuItem icon="color-palette-outline" text="Themes" isComingSoon showDivider={false} />
+        </Surface>
+
+        <TouchableOpacity
+          onPress={handleSignOut}
+          activeOpacity={0.85}
+          style={{
+            backgroundColor: theme.surface,
+            borderRadius: 22,
+            paddingVertical: 18,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: theme.danger,
+          }}
+        >
+          <Ionicons name="log-out-outline" size={22} color={theme.danger} />
+          <Text style={{ color: theme.danger, fontSize: 17, fontWeight: '700', marginLeft: 10 }}>Log out</Text>
+        </TouchableOpacity>
+
+        <View style={{ alignItems: 'center', marginTop: 12 }}>
+          <Text style={{ color: theme.textSecondary }}>App Version 1.0.0</Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

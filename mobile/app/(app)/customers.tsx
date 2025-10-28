@@ -1,8 +1,7 @@
 // mobile/app/(app)/customers.tsx
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Pressable, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Pressable, Alert, StyleSheet } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +9,8 @@ import { useIsFocused } from '@react-navigation/native';
 import { fetchCustomers, deleteCustomer, ICustomer } from '../../store/slices/customerSlice';
 import { fetchTransactions } from '../../store/slices/transactionSlice'; // 1. Import fetchTransactions
 import { RootState } from '../../store/store';
+import { ScreenContainer } from '../../components/ui/ScreenContainer';
+import { useTheme } from '../../components/ThemeProvider';
 
 // 2. New interface for our merged data
 interface CustomerSummary {
@@ -21,6 +22,7 @@ export default function CustomersScreen() {
   const dispatch = useAppDispatch();
   const isFocused = useIsFocused();
   const router = useRouter();
+  const { theme } = useTheme();
   
   // 3. Get data from BOTH slices
   const { items: customers, status: customerStatus } = useAppSelector((state: RootState) => state.customers);
@@ -62,20 +64,41 @@ export default function CustomersScreen() {
 
   // ... (ListHeader is unchanged)
   const ListHeader = () => (
-    <View>
-      <View className="p-6">
-        <Text className="text-3xl font-bold text-gray-800">Customers</Text>
-      </View>
-      <View className="px-6 mt-2 mb-4">
-        <Pressable 
-          onPress={() => router.push('/add-customer')}
-          className="bg-blue-600 p-4 rounded-lg flex-row justify-center items-center shadow-lg"
-        >
-          <Ionicons name="add-circle" size={24} color="white" />
-          <Text className="text-white text-lg font-bold ml-2">Add New Customer</Text>
-        </Pressable>
-      </View>
-      <Text className="text-xl font-bold text-gray-700 mt-4 px-6 mb-2">
+    <View style={{ paddingHorizontal: 24, paddingBottom: 12 }}>
+      <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '600', marginTop: 8 }}>
+        Relationship manager
+      </Text>
+      <Text style={{ color: theme.textPrimary, fontSize: 32, fontWeight: '800', marginTop: 4 }}>
+        Customers
+      </Text>
+      <Text style={{ color: theme.textSecondary, marginTop: 12 }}>
+        Track outstanding balances and maintain healthy partnerships.
+      </Text>
+
+      <Pressable
+        onPress={() => router.push('/add-customer')}
+        style={{
+          backgroundColor: theme.accent,
+          marginTop: 24,
+          borderRadius: 22,
+          paddingVertical: 16,
+          alignItems: 'center',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          shadowColor: theme.accent,
+          shadowOpacity: 0.28,
+          shadowRadius: 22,
+          shadowOffset: { width: 0, height: 16 },
+          elevation: 6,
+        }}
+      >
+        <Ionicons name="person-add" size={22} color={theme.onAccent} />
+        <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700', marginLeft: 10 }}>
+          Add New Customer
+        </Text>
+      </Pressable>
+
+      <Text style={{ color: theme.textPrimary, fontSize: 20, fontWeight: '700', marginTop: 32 }}>
         All Customers
       </Text>
     </View>
@@ -113,47 +136,84 @@ export default function CustomersScreen() {
   // --- 6. UPDATED CustomerRow component ---
   const CustomerRow = ({ item }: { item: CustomerSummary }) => {
     const { customer, netBalance } = item;
-    const balanceColor = netBalance >= 0 ? 'text-green-600' : 'text-red-600';
+    const balanceColor = netBalance >= 0 ? theme.success : theme.danger;
 
     return (
-      <View className="bg-white p-4 mx-6 mb-3 rounded-lg shadow-sm border border-gray-200">
+      <View
+        style={{
+          backgroundColor: theme.surface,
+          marginHorizontal: 24,
+          marginBottom: 16,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: theme.border,
+          padding: 20,
+          shadowColor: '#000',
+          shadowOpacity: 0.08,
+          shadowRadius: 20,
+          shadowOffset: { width: 0, height: 12 },
+          elevation: 6,
+        }}
+      >
         <Pressable
           onPress={() => router.push({
             pathname: '/customer/[id]',
             params: { id: customer._id }
           })}
-          className="flex-row justify-between items-center"
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
         >
           {/* Left Side (Name & Balance) */}
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-gray-900" numberOfLines={1}>{customer.name}</Text>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{ color: theme.textPrimary, fontSize: 18, fontWeight: '700' }}
+              numberOfLines={1}
+            >
+              {customer.name}
+            </Text>
             {/* This is the new balance text */}
-            <Text className={`text-sm font-semibold ${balanceColor}`}>
-              {netBalance > 0 ? `You'll Get: ₹${netBalance.toFixed(2)}` :
-               netBalance < 0 ? `You'll Give: ₹${Math.abs(netBalance).toFixed(2)}` :
-               `Settled`}
+            <Text
+              style={{
+                color: balanceColor,
+                fontSize: 14,
+                fontWeight: '600',
+                marginTop: 6,
+              }}
+            >
+              {netBalance > 0 ? `You'll Get ₹${netBalance.toFixed(2)}` :
+                netBalance < 0 ? `You'll Give ₹${Math.abs(netBalance).toFixed(2)}` :
+                  'Account Settled'}
             </Text>
           </View>
           
           {/* Right Side (Arrow icon) */}
-          <View className="pl-2">
-            <Ionicons name="chevron-forward" size={24} color="#9CA3AF" />
+          <View style={{ paddingLeft: 12 }}>
+            <Ionicons name="chevron-forward" size={24} color={theme.textSecondary} />
           </View>
         </Pressable>
         
         {/* Edit/Delete Buttons (unchanged) */}
-        <View className="flex-row justify-end mt-3 pt-3 border-t border-gray-100">
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            marginTop: 16,
+            paddingTop: 12,
+            borderTopWidth: 1,
+            borderTopColor: theme.border,
+            gap: 12,
+          }}
+        >
           <TouchableOpacity
             onPress={() => handleEdit(customer._id)}
-            className="px-3 py-1 mr-2"
+            style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: theme.surfaceMuted }}
           >
-            <Ionicons name="pencil-outline" size={20} color="#3B82F6" />
+            <Ionicons name="pencil-outline" size={20} color={theme.accent} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleDelete(customer)}
-            className="px-3 py-1"
+            style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: `${theme.danger}1A` }}
           >
-            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+            <Ionicons name="trash-outline" size={20} color={theme.danger} />
           </TouchableOpacity>
         </View>
       </View>
@@ -164,25 +224,41 @@ export default function CustomersScreen() {
   const isLoading = (customerStatus === 'loading' || transactionStatus === 'loading') && !customerSummaryList.length;
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      { (isLoading || isDeleting) ? (
-        <View className="absolute inset-0 justify-center items-center bg-gray-50/80 z-10">
-          <ActivityIndicator size="large" />
+    <ScreenContainer edges={['top', 'left', 'right']}>
+      {(isLoading || isDeleting) && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: theme.background + 'CC',
+            zIndex: 10,
+          }}
+        >
+          <ActivityIndicator size="large" color={theme.accent} />
         </View>
-      ) : null}
+      )}
 
       <FlatList
-        data={customerSummaryList} // 8. Use the new summary list
+        data={customerSummaryList}
         renderItem={CustomerRow}
-        keyExtractor={(item) => item.customer._id} // 9. Get ID from customer object
+        keyExtractor={(item) => item.customer._id}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={() => (
-          <Text className="text-center text-gray-500 mt-10 px-6">
+          <Text
+            style={{
+              color: theme.textSecondary,
+              textAlign: 'center',
+              marginTop: 32,
+              paddingHorizontal: 24,
+            }}
+          >
             No customers found. Tap the button above to add one!
           </Text>
         )}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ paddingBottom: 48 }}
+        showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

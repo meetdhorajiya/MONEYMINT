@@ -1,122 +1,185 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View, Text, TextInput, Alert, Platform,
-  KeyboardAvoidingView, ActivityIndicator, ScrollView, Pressable, StyleSheet,
+  View,
+  Text,
+  TextInput,
+  Alert,
+  Platform,
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppDispatch } from '@/hooks/useAuth';
-import { updateTransaction, Transaction } from '@/store/slices/transactionSlice';
-import { fetchReportSummary } from '@/store/slices/reportSlice'; // 1. ADD THIS IMPORT
+import { ScreenContainer } from '../components/ui/ScreenContainer';
+import { SegmentToggle } from '../components/ui/SegmentToggle';
+import { useAppDispatch, useAppSelector } from '@/hooks/useAuth';
+import { updateTransaction } from '@/store/slices/transactionSlice';
+import { fetchReportSummary } from '@/store/slices/reportSlice';
+import { useTheme } from '../components/ThemeProvider';
 
-type TransactionParams = { [K in keyof Transaction]: string };
+type TransactionParams = {
+  _id?: string;
+  amount?: string;
+  type?: 'income' | 'expense';
+  category?: string;
+  description?: string;
+  customer?: string;
+};
 
 export default function EditTransactionScreen() {
   const params = useLocalSearchParams<TransactionParams>();
-  
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [customerId, setCustomerId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { theme } = useTheme();
 
-  // This effect now runs only ONCE to pre-fill the form
+  const resolvedCustomerName = useAppSelector((state) =>
+    customerId
+      ? state.customers.items.find((customer) => customer._id === customerId)?.name ?? null
+      : null,
+  );
+
   useEffect(() => {
     setType(params.type === 'income' ? 'income' : 'expense');
-    setAmount(params.amount || '');
-    setCategory(params.category || '');
-    setDescription(params.description || '');
-  }, []); // The empty dependency array is the fix
+    setAmount(params.amount ? String(params.amount) : '');
+    setCategory(params.category ?? '');
+    setDescription(params.description ?? '');
+    setCustomerId(params.customer && params.customer.length ? params.customer : null);
+  }, [params.amount, params.category, params.customer, params.description, params.type]);
+
+  const inputStyle = {
+    backgroundColor: theme.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.border,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: theme.textPrimary,
+    marginTop: 12,
+  } as const;
 
   const handleUpdateTransaction = async () => {
     const numericAmount = parseFloat(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid number.');
+    if (Number.isNaN(numericAmount) || numericAmount <= 0) {
+      Alert.alert('Invalid amount', 'Please enter a valid number.');
       return;
     }
 
     setIsLoading(true);
-    const updatedData: Omit<Transaction, 'user'> = {
-      _id: params._id!,
+    if (!params._id) {
+      Alert.alert('Missing data', 'Unable to locate the transaction to update.');
+      setIsLoading(false);
+      return;
+    }
+
+    const updatedData = {
+      _id: params._id,
       amount: numericAmount,
       type,
       category,
       description,
-      ledger: params.ledger!,
-      date: params.date!,
+      customer: customerId,
     };
-    try {
-      // 1. Wait for the transaction to update
-      await dispatch(updateTransaction(updatedData)).unwrap();
-      
-      // 2. --- THIS IS THE NEW LINE ---
-      //    Refresh the report data in the background
-      dispatch(fetchReportSummary());
 
-      // 3. Go back
+    try {
+      await dispatch(updateTransaction(updatedData)).unwrap();
+      dispatch(fetchReportSummary());
       router.back();
     } catch (error: any) {
-      Alert.alert('Error Updating', error.message);
+      Alert.alert('Error updating', error?.message || 'Unable to update transaction.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <ScreenContainer edges={['left', 'right', 'bottom']}>
       <Stack.Screen options={{ title: 'Edit Transaction' }} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="p-6">
-            <View className="flex-row mb-6 bg-gray-200 rounded-lg p-1">
-              <Pressable
-                className="flex-1 p-3 rounded-md"
-                style={type === 'expense' ? styles.selectedButton : styles.unselectedButton}
-                onPress={() => setType('expense')}
-              >
-                <Text className={`text-center font-bold ${type === 'expense' ? 'text-red-500' : 'text-gray-500'}`}>Expense (OUT)</Text>
-              </Pressable>
-              
-              <Pressable
-                className="flex-1 p-3 rounded-md"
-                style={type === 'income' ? styles.selectedButton : styles.unselectedButton}
-                onPress={() => setType('income')}
-              >
-                <Text className={`text-center font-bold ${type === 'income' ? 'text-green-500' : 'text-gray-500'}`}>Income (IN)</Text>
-              </Pressable>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+          <View style={{ paddingTop: 12 }}>
+            <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15 }}>Select flow</Text>
+            <View style={{ marginTop: 12 }}>
+              <SegmentToggle value={type} onChange={setType} />
             </View>
 
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-              placeholder="Amount (₹)" value={amount} onChangeText={setAmount} keyboardType="numeric"
-            />
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-4 text-lg border border-gray-200"
-              placeholder="Category" value={category} onChangeText={setCategory} autoCapitalize="words"
-            />
-            <TextInput
-              className="bg-white p-4 rounded-lg mb-6 text-lg border border-gray-200 h-24"
-              placeholder="Remark / Description" value={description} onChangeText={setDescription} multiline
-            />
-            
-            <Pressable
-              className="bg-blue-600 p-4 rounded-lg"
-              onPress={handleUpdateTransaction}
-              disabled={isLoading}
-            >
-              {isLoading ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center font-bold text-lg">Update Transaction</Text>}
-            </Pressable>
+            <View style={{ marginTop: 24 }}>
+              <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15 }}>Amount (₹)</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="E.g. 1250"
+                placeholderTextColor={theme.textSecondary}
+                value={amount}
+                onChangeText={setAmount}
+                keyboardType="decimal-pad"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View>
+              <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15, marginTop: 20 }}>Category</Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="E.g. Groceries, Rent, Salary"
+                placeholderTextColor={theme.textSecondary}
+                value={category}
+                onChangeText={setCategory}
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View>
+              <Text style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15, marginTop: 20 }}>Notes (optional)</Text>
+              <TextInput
+                style={{
+                  ...inputStyle,
+                  height: 120,
+                  textAlignVertical: 'top',
+                }}
+                placeholder="Add a quick remark to remember this transaction"
+                placeholderTextColor={theme.textSecondary}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+              />
+            </View>
+
+            <View style={{ marginTop: 32 }}>
+              <TouchableOpacity
+                onPress={handleUpdateTransaction}
+                disabled={isLoading}
+                style={{
+                  backgroundColor: theme.accent,
+                  borderRadius: 22,
+                  paddingVertical: 18,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 10,
+                  opacity: isLoading ? 0.7 : 1,
+                }}
+              >
+                {isLoading ? <ActivityIndicator color={theme.onAccent} /> : null}
+                <Text style={{ color: theme.onAccent, fontSize: 17, fontWeight: '700' }}>Update Transaction</Text>
+              </TouchableOpacity>
+              <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 12, textAlign: 'center' }}>
+                  {customerId
+                    ? `Updating this transaction for ${resolvedCustomerName ?? 'the linked customer'}.`
+                    : 'Updating your personal transaction record.'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  selectedButton: { backgroundColor: 'white', elevation: 2 },
-  unselectedButton: { backgroundColor: 'transparent' },
-});
