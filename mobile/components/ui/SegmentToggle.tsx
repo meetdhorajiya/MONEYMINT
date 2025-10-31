@@ -31,6 +31,7 @@ export function SegmentToggle({ value, onChange, labels }: SegmentToggleProps) {
     >
       {(Object.keys(resolvedLabels) as OptionValue[]).map((option) => {
         const isActive = option === value;
+        const activeColor = option === 'income' ? theme.success : theme.danger;
         return (
           <Pressable
             key={option}
@@ -43,7 +44,9 @@ export function SegmentToggle({ value, onChange, labels }: SegmentToggleProps) {
               borderRadius: 16,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: isActive ? theme.accent : 'transparent',
+              backgroundColor: isActive ? activeColor : 'transparent',
+              borderWidth: 1,
+              borderColor: isActive ? activeColor : 'transparent',
             }}
           >
             <Text
