@@ -153,10 +153,9 @@ export default function InvestScreen() {
 
       <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }}>
         <Surface highlight style={{ padding: 28 }}>
-          <Text style={{ color: theme.onAccent, opacity: 0.7, fontSize: 14, fontWeight: '600' }}>Invest smarter</Text>
-          <Text style={{ color: theme.onAccent, fontSize: 28, fontWeight: '800', marginTop: 6 }}>Get tailored market briefs</Text>
+          <Text style={{ color: theme.onAccent, fontSize: 28, fontWeight: '800', marginTop: 6 }}>Invest smarter</Text>
           <Text style={{ color: theme.onAccent, marginTop: 12, lineHeight: 20, opacity: 0.85 }}>
-            Enter an amount, choose a focus area, and let Gemini generate a snapshot with opportunities, risks, and a next step.
+            Enter an amount, choose a focus area, and let AI generate a snapshot with opportunities, risks, and a next step.
           </Text>
         </Surface>
 
