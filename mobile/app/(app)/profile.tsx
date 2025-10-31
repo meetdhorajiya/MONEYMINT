@@ -98,7 +98,10 @@ export default function ProfileScreen() {
 
   const handleSignOut = () => dispatch(signOut());
   const handlePrivacyPolicy = () =>
-    Alert.alert('Privacy Policy', 'Your data is stored securely and is not shared with any third parties.');
+    Alert.alert(
+      'Privacy Policy',
+      'Your data is stored securely and is not shared with any third parties.\n\nInvestment guidance in MoneyMint is educational only. Markets are volatile and you bear full responsibility for investment decisions and potential losses.'
+    );
   const handleContactUs = () =>
     Alert.alert('Contact Us', 'For support, please email us at:\nsupport@moneymint.com');
 
