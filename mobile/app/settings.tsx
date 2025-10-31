@@ -24,6 +24,9 @@ export default function SettingsScreen() {
         </View>
 
         <Surface style={{ padding: 0, overflow: 'hidden' }}>
+          <Link href="/change-avatar" asChild>
+            <ProfileMenuItem icon="camera-outline" text="Change Profile Photo" />
+          </Link>
           <Link href="/change-name" asChild>
             <ProfileMenuItem icon="person-outline" text="Change Name" />
           </Link>
