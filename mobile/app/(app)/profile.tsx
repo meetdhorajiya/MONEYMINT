@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, TouchableOpacityProps } from 'react-native';
-import { Stack, Link } from 'expo-router';
+import { Stack, Link, useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '../../hooks/useAuth';
-import { signOut } from '../../store/slices/authSlice';
+import { signOut, fetchAvatar } from '../../store/slices/authSlice';
 import { ScreenContainer, Surface } from '../../components/ui/ScreenContainer';
 import { useTheme } from '../../components/ThemeProvider';
+import { Image } from 'expo-image';
 
 type ProfileMenuItemProps = TouchableOpacityProps & {
   icon: keyof typeof Ionicons.glyphMap;
@@ -83,13 +84,27 @@ export const ProfileMenuItem = ({
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const token = useAppSelector((state) => state.auth.token);
   const { theme } = useTheme();
+  const router = useRouter();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.id && token) {
+        dispatch(fetchAvatar());
+      }
+    }, [dispatch, token, user?.id])
+  );
 
   const handleSignOut = () => dispatch(signOut());
   const handlePrivacyPolicy = () =>
     Alert.alert('Privacy Policy', 'Your data is stored securely and is not shared with any third parties.');
   const handleContactUs = () =>
     Alert.alert('Contact Us', 'For support, please email us at:\nsupport@moneymint.com');
+
+  const handleManageAvatar = () => {
+    router.push('/change-avatar');
+  };
 
   return (
     <ScreenContainer edges={['top', 'left', 'right']}>
@@ -107,12 +122,64 @@ export default function ProfileScreen() {
 
         <Surface>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="person-circle" size={68} color={theme.accent} />
+            <View style={{ position: 'relative' }}>
+              <TouchableOpacity onPress={handleManageAvatar} activeOpacity={0.85}>
+                {user?.avatarUrl ? (
+                  <Image
+                    key={user.avatarUrl || 'avatar-placeholder'}
+                    source={{
+                      uri: user.avatarUrl || undefined,
+                      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                    }}
+                    style={{ width: 76, height: 76, borderRadius: 24, backgroundColor: theme.surfaceMuted }}
+                    contentFit="cover"
+                    cachePolicy="none"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 76,
+                      height: 76,
+                      borderRadius: 24,
+                      backgroundColor: theme.surfaceMuted,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="person-circle" size={56} color={theme.accent} />
+                  </View>
+                )}
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: -4,
+                    right: -4,
+                    backgroundColor: theme.accent,
+                    borderRadius: 16,
+                    padding: 6,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.15,
+                    shadowRadius: 6,
+                    shadowOffset: { width: 0, height: 2 },
+                    elevation: 4,
+                  }}
+                >
+                  <Ionicons name="camera" size={16} color={theme.onAccent} />
+                </View>
+              </TouchableOpacity>
+            </View>
             <View style={{ marginLeft: 16, flex: 1 }}>
               <Text style={{ color: theme.textSecondary, fontSize: 14, fontWeight: '600' }}>Name</Text>
               <Text style={{ color: theme.textPrimary, fontSize: 24, fontWeight: '800', marginTop: 4 }}>
                 {user?.name || '—'}
               </Text>
+              <TouchableOpacity
+                onPress={handleManageAvatar}
+                activeOpacity={0.8}
+                style={{ marginTop: 8 }}
+              >
+                <Text style={{ color: theme.accent, fontWeight: '700' }}>Manage photo</Text>
+              </TouchableOpacity>
             </View>
           </View>
           <View style={{ borderTopWidth: 1, borderTopColor: theme.border, marginTop: 18, paddingTop: 18 }}>

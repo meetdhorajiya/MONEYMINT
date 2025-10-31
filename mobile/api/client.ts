@@ -6,7 +6,7 @@ const developmentUrl = process.env.EXPO_PUBLIC_MOBILE_DEV_URL
 const productionUrl = process.env.EXPO_PUBLIC_MOBILE_PRO_URL
 
 // Choose correct base URL
-const API_BASE_URL = __DEV__ ? developmentUrl : productionUrl;
+export const API_BASE_URL = __DEV__ ? developmentUrl : productionUrl;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/User';
 import withAuth, { NextApiRequestWithUser } from '../../../middleware/withAuth';
+import { serializeUser } from '@/lib/avatarUrl';
 
 async function handler(req: NextApiRequestWithUser, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -38,7 +39,11 @@ async function handler(req: NextApiRequestWithUser, res: NextApiResponse) {
     user.name = newName.trim();
     await user.save();
 
-    res.status(200).json({ success: true, message: 'Name updated successfully.', user: { name: user.name, email: user.email } });
+    res.status(200).json({
+      success: true,
+      message: 'Name updated successfully.',
+      user: serializeUser(user),
+    });
 
   } catch (error) {
     res.status(500).json({ message: 'Server error.', error });

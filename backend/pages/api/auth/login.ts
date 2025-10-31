@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
+import { serializeUser } from '@/lib/avatarUrl';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Ensure the request is a POST request
@@ -45,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // --- Send Success Response ---
     res.status(200).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: serializeUser(user),
     });
 
   } catch (error) {
