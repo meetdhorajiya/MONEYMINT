@@ -20,6 +20,15 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="invest"
+        options={{
+          title: 'Invest',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="customers"
         options={{
           title: 'Customers',
