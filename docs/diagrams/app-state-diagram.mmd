@@ -1,0 +1,42 @@
+%% MoneyMint Mobile App High-Level State Diagram
+```mermaid
+stateDiagram-v2
+    [*] --> Boot
+    Boot : Launch Expo app
+    Boot --> Hydrating : load SecureStore token
+
+    Hydrating --> Authenticated : token valid & user hydrated
+    Hydrating --> Unauthenticated : no token or hydration failed
+
+    Unauthenticated --> AuthFlow : user lands on login/signup stack
+    AuthFlow --> Authenticated : login/signup succeeds
+
+    Authenticated --> MainTabs : Dashboard, Invest, Customers, Reports, Profile
+
+    state MainTabs {
+        [*] --> Dashboard
+        Dashboard --> Invest : user taps Invest tab
+        Dashboard --> Customers : manage customers
+        Dashboard --> Reports : view analytics summary
+        Dashboard --> Profile : manage account
+        Invest --> Dashboard : back navigation
+        Customers --> Dashboard : back navigation
+        Reports --> Dashboard : back navigation
+        Profile --> Dashboard : back navigation
+    }
+
+    state InvestFlow{
+        [*] --> Idle
+        Idle --> Collecting : user enters amount & category
+        Collecting --> Submitting : user taps "Get AI Insight"
+        Submitting --> InsightReady : API returns success
+        Submitting --> Error : API failure
+        InsightReady --> ViewingBrief : user dismisses modal
+        ViewingBrief --> Idle : user edits input or returns to tabs
+        Error --> Idle : user retries
+    }
+
+    MainTabs --> Authenticated : passive state
+    Authenticated --> SigningOut : user triggers logout
+    SigningOut --> Unauthenticated : SecureStore cleared
+```
