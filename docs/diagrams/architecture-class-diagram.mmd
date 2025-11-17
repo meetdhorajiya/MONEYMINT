@@ -1,0 +1,125 @@
+%% MoneyMint Domain Class Diagram
+```mermaid
+classDiagram
+    class User {
+        +String _id
+        +String name
+        +String email
+        +String? password
+        +String? avatarUrl
+        +String? avatarId
+        +Date createdAt
+        +Date updatedAt
+    }
+
+    class Customer {
+        +String _id
+        +String name
+        +ObjectId user
+        +Date createdAt
+        +Date updatedAt
+    }
+
+    class Transaction {
+        +String _id
+        +ObjectId user
+        +ObjectId? customer
+        +Number amount
+        +"income | expense" type
+        +String category
+        +String? description
+        +Date date
+        +Date createdAt
+        +Date updatedAt
+    }
+
+    class AuthController {
+        <<Next.js API Route>>
+        +login()
+        +signup()
+        +changeName()
+        +changeEmail()
+        +changePassword()
+        +deleteAccount()
+        +avatar()
+    }
+
+    class CustomerController {
+        <<Next.js API Route>>
+        +list()
+        +create()
+        +update()
+        +delete()
+        +getById()
+    }
+
+    class TransactionController {
+        <<Next.js API Route>>
+        +list()
+        +create()
+        +update()
+        +delete()
+        +getById()
+    }
+
+    class InvestController {
+        <<Next.js API Route>>
+        +quote()
+    }
+
+    class AuthSlice {
+        <<Redux Slice>>
+        +token: String?
+        +user: MobileUser?
+        +signIn()
+        +signOut()
+        +changeName()
+        +changeEmail()
+        +changePassword()
+        +uploadAvatar()
+        +removeAvatar()
+        +fetchAvatar()
+    }
+
+    class CustomerSlice {
+        <<Redux Slice>>
+        +customers: Customer[]
+        +fetchCustomers()
+        +addCustomer()
+        +updateCustomer()
+        +removeCustomer()
+    }
+
+    class TransactionSlice {
+        <<Redux Slice>>
+        +transactions: Transaction[]
+        +fetchTransactions()
+        +addTransaction()
+        +updateTransaction()
+        +removeTransaction()
+    }
+
+    class ReportSlice {
+        <<Redux Slice>>
+        +summary
+        +fetchSummary()
+    }
+
+    User "1" --> "*" Customer : owns >
+    User "1" --> "*" Transaction : records >
+    Customer "1" --> "*" Transaction : associated >
+
+    AuthController --> User : persists
+    CustomerController --> Customer
+    TransactionController --> Transaction
+    InvestController --> Transaction : analyses budget
+
+    AuthSlice --> AuthController : calls API
+    CustomerSlice --> CustomerController
+    TransactionSlice --> TransactionController
+    ReportSlice --> TransactionController : aggregates data
+
+    AuthSlice --> User : caches current
+    CustomerSlice --> Customer : maps API
+    TransactionSlice --> Transaction : maps API
+```
